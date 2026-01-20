@@ -1,0 +1,161 @@
+{
+    "quizVersion": "EAU-2026-v1",
+    "questions": [
+        {
+            "id": 1,
+            "emojis": [
+                "🤝",
+                "❤️",
+                "😊",
+                "💡",
+                "🎯",
+                "✨"
+            ],
+            "answer": "handshake heart smile idea target sparkles"
+        },
+        {
+            "id": 2,
+            "emojis": [
+                "🧠",
+                "🔍",
+                "🧩",
+                "📝",
+                "📌",
+                "⭐"
+            ],
+            "answer": "brain search puzzle note pin star"
+        },
+        {
+            "id": 3,
+            "emojis": [
+                "🔥",
+                "🚀",
+                "🎯",
+                "💡",
+                "🧠",
+                "✨"
+            ],
+            "answer": "fire rocket target idea brain sparkles"
+        },
+        {
+            "id": 4,
+            "emojis": [
+                "📊",
+                "✅",
+                "😊",
+                "📌",
+                "🔍",
+                "💡"
+            ],
+            "answer": "chart check smile pin search idea"
+        },
+        {
+            "id": 5,
+            "emojis": [
+                "🧠",
+                "💡",
+                "🧩",
+                "🤝",
+                "❤️",
+                "😊",
+                "🎯"
+            ],
+            "answer": "brain idea puzzle handshake heart smile target"
+        },
+        {
+            "id": 6,
+            "emojis": [
+                "🔍",
+                "📌",
+                "📝",
+                "✨",
+                "🚀",
+                "🎯",
+                "⭐"
+            ],
+            "answer": "search pin note sparkles rocket target star"
+        },
+        {
+            "id": 7,
+            "emojis": [
+                "🔥",
+                "🧠",
+                "💡",
+                "⏱️",
+                "🎯",
+                "✅",
+                "✨"
+            ],
+            "answer": "fire brain idea timer target check sparkles"
+        },
+        {
+            "id": 8,
+            "emojis": [
+                "🧩",
+                "🔍",
+                "📊",
+                "📝",
+                "🤝",
+                "❤️",
+                "⭐"
+            ],
+            "answer": "puzzle search chart note handshake heart star"
+        },
+        {
+            "id": 9,
+            "emojis": [
+                "⏱️",
+                "🧠",
+                "💡",
+                "🎯",
+                "🔍",
+                "🧩",
+                "📝",
+                "✅"
+            ],
+            "answer": "timer brain idea target search puzzle note check"
+        },
+        {
+            "id": 10,
+            "emojis": [
+                "🔥",
+                "🚀",
+                "✨",
+                "⭐",
+                "📌",
+                "📝",
+                "🔍",
+                "💡"
+            ],
+            "answer": "fire rocket sparkles star pin note search idea"
+        },
+        {
+            "id": 11,
+            "emojis": [
+                "📊",
+                "🧠",
+                "🔍",
+                "🧩",
+                "🎯",
+                "💡",
+                "✨",
+                "❤️"
+            ],
+            "answer": "chart brain search puzzle target idea sparkles heart"
+        },
+        {
+            "id": 12,
+            "emojis": [
+                "🤝",
+                "❤️",
+                "😊",
+                "✅",
+                "❌",
+                "⏱️",
+                "🎯",
+                "⭐"
+            ],
+            "answer": "handshake heart smile check cross timer target star"
+        }
+    ]
+}

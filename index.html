@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>EAU Emoji Prompt Quiz</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body class="bg-surface">
+    <!-- Top Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-ink shadow-sm">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+          <span class="brand-badge">EAU</span>
+          <span class="fw-semibold">Emoji Prompt Quiz</span>
+        </a>
+
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span
+            id="topUserPill"
+            class="badge rounded-pill text-bg-light d-none"
+          >
+            <i class="bi bi-person-circle me-1"></i>
+            <span id="topUserName"></span>
+          </span>
+
+          <!-- <button
+            id="btnResetAllTop"
+            class="btn btn-sm btn-outline-light d-none"
+            type="button"
+            title="Reset attempt (local only)"
+          >
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+          </button> -->
+          <button
+            id="btnLogout"
+            class="btn btn-sm btn-outline-danger d-none"
+            type="button"
+          >
+            <i class="bi bi-box-arrow-right me-1"></i>Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-4 py-md-5">
+      <!-- App Shell -->
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-9 col-xl-8">
+          <!-- Alert -->
+          <div id="globalAlert" class="alert d-none" role="alert"></div>
+
+          <!-- LOGIN VIEW -->
+          <section id="viewLogin" class="card border-0 shadow-soft">
+            <div class="card-body p-4 p-md-5">
+              <div
+                class="d-flex align-items-start justify-content-between gap-3"
+              >
+                <div>
+                  <h1 class="h3 mb-2">Login</h1>
+                  <p class="text-muted mb-0">
+                    Enter your username and password to start the quiz.
+                  </p>
+                </div>
+                <div class="icon-splash">
+                  <i class="bi bi-emoji-smile"></i>
+                </div>
+              </div>
+
+              <hr class="my-4" />
+
+              <form id="loginForm" class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label class="form-label">Username</label>
+                  <input
+                    id="loginUsername"
+                    type="text"
+                    class="form-control form-control-lg"
+                    placeholder="e.g., Hammad"
+                    autocomplete="username"
+                    required
+                  />
+                  <div class="form-text">
+                    Use your first name (as given by your instructor).
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label class="form-label">Password</label>
+                  <input
+                    id="loginPassword"
+                    type="password"
+                    class="form-control form-control-lg"
+                    placeholder="e.g., HammadEAU2026"
+                    autocomplete="current-password"
+                    required
+                  />
+                  <div class="form-text">
+                    Password format: <code>Username + EAU2026</code>
+                  </div>
+                </div>
+
+                <div
+                  class="col-12 d-flex flex-wrap gap-2 align-items-center mt-2"
+                >
+                  <button class="btn btn-primary btn-lg" type="submit">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                  </button>
+                  <button
+                    id="btnDemoFill"
+                    class="btn btn-outline-secondary btn-lg"
+                    type="button"
+                    title="Fill a sample username/password"
+                  >
+                    <i class="bi bi-magic me-2"></i>Demo Fill
+                  </button>
+
+                  <span class="ms-auto text-muted small">
+                    <i class="bi bi-shield-check me-1"></i>
+                    Classroom mode (no security focus)
+                  </span>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <!-- WELCOME VIEW -->
+          <section id="viewWelcome" class="card border-0 shadow-soft d-none">
+            <div class="card-body p-4 p-md-5">
+              <div
+                class="d-flex align-items-start justify-content-between gap-3"
+              >
+                <div>
+                  <h2 class="h3 mb-2">
+                    Welcome,
+                    <span id="welcomeName" class="text-primary"></span> 👋
+                  </h2>
+                  <p class="text-muted mb-0">
+                    You will answer <strong>12 questions</strong>. Each question
+                    shows a sequence of emojis. Type the matching words in the
+                    <strong>same order</strong>.
+                  </p>
+                </div>
+                <div class="icon-splash icon-splash--alt">
+                  <i class="bi bi-stopwatch"></i>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-3">
+                <div class="col-12 col-md-6">
+                  <div class="p-3 rounded-4 bg-panel border">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="bi bi-list-check text-primary"></i>
+                      <div class="fw-semibold">Quiz Plan</div>
+                    </div>
+                    <ul class="mb-0 text-muted small" id="planList"></ul>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <div class="p-3 rounded-4 bg-panel border">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="bi bi-trophy text-primary"></i>
+                      <div class="fw-semibold">Scoring</div>
+                    </div>
+                    <ul class="mb-0 text-muted small">
+                      <li>1 mark per correct answer (max 12)</li>
+                      <li>
+                        Final score = <strong>50% Accuracy</strong> +
+                        <strong>50% Time</strong>
+                      </li>
+                      <li>Faster completion improves time score</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 align-items-center mt-4">
+                <button
+                  id="btnStart"
+                  class="btn btn-primary btn-lg"
+                  type="button"
+                >
+                  <i class="bi bi-play-fill me-2"></i>Start Quiz
+                </button>
+                <button
+                  id="btnShowLegend"
+                  class="btn btn-outline-secondary btn-lg"
+                  type="button"
+                >
+                  <i class="bi bi-book me-2"></i>Emoji Legend
+                </button>
+
+                <span class="ms-auto text-muted small">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  No back button — answer carefully.
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <!-- QUIZ VIEW -->
+          <section id="viewQuiz" class="card border-0 shadow-soft d-none">
+            <div class="card-body p-4 p-md-5">
+              <div
+                class="d-flex flex-wrap justify-content-between align-items-center gap-3"
+              >
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge rounded-pill text-bg-primary">
+                      <i class="bi bi-question-circle me-1"></i>
+                      Q <span id="qNumber"></span>/<span id="qTotal"></span>
+                    </span>
+
+                    <span
+                      class="badge rounded-pill text-bg-light border text-ink"
+                    >
+                      <i class="bi bi-braces-asterisk me-1"></i>
+                      Length: <span id="qLength"></span>
+                    </span>
+                  </div>
+
+                  <div class="text-muted small">
+                    Type words in the <strong>same sequence</strong> as the
+                    emojis.
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <div class="timer-pill">
+                    <i class="bi bi-stopwatch me-2"></i>
+                    <span id="timerText">00:00</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <div
+                  class="progress progress-thin"
+                  role="progressbar"
+                  aria-label="Progress"
+                >
+                  <div
+                    id="progressBar"
+                    class="progress-bar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+
+              <div class="emoji-panel mt-4">
+                <div
+                  id="emojiSequence"
+                  class="emoji-seq"
+                  aria-label="Emoji sequence"
+                ></div>
+              </div>
+
+              <div class="mt-4">
+                <label class="form-label fw-semibold"
+                  >Your Answer (space-separated)</label
+                >
+                <input
+                  id="answerInput"
+                  class="form-control form-control-lg"
+                  placeholder="e.g., handshake heart smile ..."
+                  maxlength="200"
+                />
+                <div
+                  class="d-flex justify-content-between mt-2 small text-muted"
+                >
+                  <div>
+                    Tip: use single spaces between words. Case doesn’t matter.
+                  </div>
+                  <div>
+                    <span id="answerCountHint"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 align-items-center mt-4">
+                <button
+                  id="btnSaveNext"
+                  class="btn btn-primary btn-lg"
+                  type="button"
+                >
+                  <i class="bi bi-check2-circle me-2"></i>Save & Next
+                </button>
+                <button
+                  id="btnLegendInQuiz"
+                  class="btn btn-outline-secondary btn-lg"
+                  type="button"
+                >
+                  <i class="bi bi-book me-2"></i>Legend
+                </button>
+
+                <span class="ms-auto text-muted small">
+                  <i class="bi bi-lock me-1"></i>Previous questions are locked.
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <!-- RESULTS VIEW -->
+          <section id="viewResults" class="card border-0 shadow-soft d-none">
+            <div class="card-body p-4 p-md-5">
+              <div
+                class="d-flex align-items-start justify-content-between gap-3"
+              >
+                <div>
+                  <h2 class="h3 mb-2">Results</h2>
+                  <p class="text-muted mb-0">
+                    Review what you got right/wrong and your final weighted
+                    score.
+                  </p>
+                </div>
+                <div class="icon-splash icon-splash--success">
+                  <i class="bi bi-award"></i>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-3">
+                <div class="col-12 col-md-4">
+                  <div class="stat-card">
+                    <div class="stat-title">Correct</div>
+                    <div class="stat-value">
+                      <span id="statCorrect"></span>/<span
+                        id="statTotal"
+                      ></span>
+                    </div>
+                    <div class="stat-sub text-muted small">1 mark each</div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                  <div class="stat-card">
+                    <div class="stat-title">Time</div>
+                    <div class="stat-value" id="statTime"></div>
+                    <div class="stat-sub text-muted small">
+                      Target: <span id="statTargetTime"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                  <div class="stat-card stat-card--primary">
+                    <div class="stat-title">Final Score</div>
+                    <div class="stat-value" id="statFinal"></div>
+                    <div class="stat-sub small opacity-75">
+                      50% Accuracy + 50% Time
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-4" />
+
+              <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                <h3 class="h5 mb-0">Detailed Review</h3>
+                <span class="ms-auto text-muted small">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Green = correct, Red = wrong
+                </span>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table align-middle table-bordered review-table">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 70px">Q</th>
+                      <th>Emojis</th>
+                      <th>Your Answer</th>
+                      <th>Correct Answer</th>
+                      <th style="width: 120px">Result</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reviewTableBody"></tbody>
+                </table>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 align-items-center mt-4">
+                <!-- <button
+                  id="btnResetAll"
+                  class="btn btn-outline-danger btn-lg"
+                  type="button"
+                >
+                  <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Attempt
+                </button> -->
+                <!-- <button
+                  id="btnBackToWelcome"
+                  class="btn btn-outline-secondary btn-lg"
+                  type="button"
+                >
+                  <i class="bi bi-house me-2"></i>Back to Welcome
+                </button> -->
+                <div class="text-center mt-4">
+                  <h5 class="fw-semibold">Thank you for participating! 🎉</h5>
+                  <p class="text-muted small mb-0">
+                    Your responses have been recorded successfully.
+                  </p>
+                </div>
+
+                <!-- <span class="ms-auto text-muted small">
+                  Stored locally in this browser only.
+                </span> -->
+              </div>
+            </div>
+          </section>
+
+          <!-- LEGEND MODAL -->
+          <div
+            class="modal fade"
+            id="legendModal"
+            tabindex="-1"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+              <div class="modal-content border-0 shadow-soft">
+                <div class="modal-header">
+                  <h5 class="modal-title">
+                    <i class="bi bi-book me-2 text-primary"></i>Emoji Legend
+                  </h5>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                  ></button>
+                </div>
+
+                <div class="modal-body">
+                  <p class="text-muted mb-3">
+                    This legend shows the emoji → word mapping used in the quiz.
+                  </p>
+
+                  <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width: 80px">Emoji</th>
+                          <th style="width: 200px">Word</th>
+                          <th>Meaning</th>
+                        </tr>
+                      </thead>
+                      <tbody id="legendTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  <button
+                    class="btn btn-primary"
+                    data-bs-dismiss="modal"
+                    type="button"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <footer class="text-center text-muted small mt-4">
+            Built for Prompt Engineering practice • EAU •
+            <span id="quizVersionFooter"></span>
+          </footer>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
