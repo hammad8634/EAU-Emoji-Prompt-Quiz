@@ -63,19 +63,16 @@ function normalizeAnswer(s) {
 
 function setTopUserUI(username) {
   const pill = $("topUserPill");
-  //   const btnReset = $("btnResetAllTop");
   const btnLogout = $("btnLogout");
 
   if (!username) {
     pill.classList.add("d-none");
-    // btnReset.classList.add("d-none");
     btnLogout.classList.add("d-none");
     return;
   }
 
   $("topUserName").textContent = username;
   pill.classList.remove("d-none");
-  //   btnReset.classList.remove("d-none");
   btnLogout.classList.remove("d-none");
 }
 
@@ -516,14 +513,11 @@ function wireEvents() {
   $("btnSaveNext").addEventListener("click", handleSaveNext);
 
   $("btnLogout").addEventListener("click", () => {
-    // clear everything
+    stopTimer();
     localStorage.clear();
-
-    // reset UI
     setTopUserUI("");
     showView("viewLogin");
-
-    showAlert("You have been logged out.", "info");
+    showAlert("Logged out.", "info");
   });
 
   // Enter key = Save & Next

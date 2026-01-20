@@ -1,20 +1,33 @@
 :root {
-  --ink: #0f172a;
+  /* EAU Maroon Theme */
+  --eau-maroon: #7a0026;
+  --eau-maroon-dark: #5a001c;
+  --eau-maroon-soft: rgba(122, 0, 38, 0.12);
+
+  /* Base */
+  --ink: #111827;
   --panel: #ffffff;
-  --surface: #f6f7fb;
+  --surface: #f6f4f5;
   --muted: #6b7280;
-  --primary: #2563eb;
-  --border: #e5e7eb;
+  --primary: var(--eau-maroon);
+  --border: #e6e2e3;
 }
 
-.bg-ink {
-  background: linear-gradient(90deg, #0f172a, #111827);
-}
+/* Page background */
 .bg-surface {
   background:
-    radial-gradient(1200px 600px at 20% 0%, #eef2ff, transparent),
-    radial-gradient(900px 500px at 80% 10%, #ecfeff, transparent),
+    radial-gradient(1200px 600px at 15% 0%, rgba(122, 0, 38, 0.1), transparent),
+    radial-gradient(
+      900px 500px at 85% 10%,
+      rgba(122, 0, 38, 0.08),
+      transparent
+    ),
     var(--surface);
+}
+
+/* Navbar background */
+.bg-eau {
+  background: linear-gradient(90deg, var(--eau-maroon-dark), var(--eau-maroon));
 }
 
 .text-ink {
@@ -22,72 +35,115 @@
 }
 
 .shadow-soft {
-  box-shadow: 0 14px 45px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 14px 45px rgba(17, 24, 39, 0.1);
 }
 
-.brand-badge {
-  display: inline-flex;
-  width: 38px;
-  height: 28px;
-  border-radius: 10px;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+/* Make Bootstrap primary buttons maroon */
+.btn-primary {
+  background-color: var(--eau-maroon) !important;
+  border-color: var(--eau-maroon) !important;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--eau-maroon-dark) !important;
+  border-color: var(--eau-maroon-dark) !important;
 }
 
+/* Make bootstrap outline-secondary a bit nicer (optional) */
+.btn-outline-secondary {
+  border-color: rgba(17, 24, 39, 0.18);
+}
+.btn-outline-secondary:hover {
+  border-color: rgba(17, 24, 39, 0.35);
+}
+
+/* Primary text in maroon */
+.text-primary {
+  color: var(--eau-maroon) !important;
+}
+
+/* Better focus ring */
+.form-control:focus {
+  border-color: rgba(122, 0, 38, 0.1);
+  box-shadow: 0 0 0 0.15rem rgba(122, 0, 38, 0.18);
+}
+
+/* Icon splashes (maroon palette) */
 .icon-splash {
   width: 56px;
   height: 56px;
   border-radius: 18px;
   display: grid;
   place-items: center;
-  background: rgba(37, 99, 235, 0.12);
-  border: 1px solid rgba(37, 99, 235, 0.18);
-  color: var(--primary);
+  background: var(--eau-maroon-soft);
+  border: 1px solid rgba(122, 0, 38, 0.18);
+  color: var(--eau-maroon);
   font-size: 26px;
 }
 .icon-splash--alt {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.18);
-  color: #059669;
+  background: rgba(122, 0, 38, 0.1);
+  border: 1px solid rgba(122, 0, 38, 0.18);
+  color: var(--eau-maroon);
 }
 .icon-splash--success {
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.18);
-  color: #d97706;
+  background: rgba(122, 0, 38, 0.12);
+  border: 1px solid rgba(122, 0, 38, 0.2);
+  color: var(--eau-maroon-dark);
+}
+
+/* Panels */
+.question-number-badge {
+  border: 1px solid var(--eau-maroon);
+  background-color: #7a0027c7;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 22px;
+  font-size: 14px;
+}
+
+.emoji-count-badge {
+  border: 1px solid var(--eau-maroon);
+  background-color: #bdbdbdc0;
+  color: var(--ink);
+  font-weight: 600;
+  padding: 10px 22px;
+  font-size: 14px;
 }
 
 .bg-panel {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
 }
 
+/* Progress bar (maroon) */
 .progress-thin {
   height: 10px;
   border-radius: 999px;
-  background: #eef2ff;
+  background: rgba(122, 0, 38, 0.1);
   overflow: hidden;
 }
 .progress-thin .progress-bar {
   border-radius: 999px;
+  background: var(--eau-maroon);
 }
 
+/* Timer pill */
 .timer-pill {
-  padding: 10px 14px;
+  padding: 10px 24px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.06);
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(122, 0, 38, 0.08);
+  border: 1px solid rgba(122, 0, 38, 0.18);
   font-weight: 700;
   letter-spacing: 0.3px;
+  color: var(--ink);
 }
 
+/* Emoji display */
 .emoji-panel {
   padding: 18px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.88);
   border: 1px solid var(--border);
 }
 
@@ -101,20 +157,26 @@
   line-height: 1;
 }
 
+/* Review table */
 .review-table td,
 .review-table th {
   vertical-align: middle;
 }
 
+.result-heading {
+  color: var(--eau-maroon);
+  font-weight: 700;
+}
+/* Stats cards */
 .stat-card {
   border-radius: 18px;
   padding: 16px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.82);
 }
 .stat-card--primary {
-  border-color: rgba(37, 99, 235, 0.25);
-  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(122, 0, 38, 0.25);
+  background: rgba(122, 0, 38, 0.1);
 }
 .stat-title {
   font-size: 13px;
@@ -124,22 +186,148 @@
 }
 .stat-value {
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ink);
 }
 .stat-card--primary .stat-value {
-  color: #1d4ed8;
+  color: var(--eau-maroon);
 }
 
+/* Code pills */
 code {
-  background: rgba(15, 23, 42, 0.06);
+  background: rgba(122, 0, 38, 0.08);
   padding: 2px 6px;
   border-radius: 8px;
 }
 
+/* Links */
+a {
+  color: var(--eau-maroon);
+}
+a:hover {
+  color: var(--eau-maroon-dark);
+}
+
+/* =========================
+   NAVBAR – COMBINED BRAND
+   ========================= */
+
+.navbar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Brand container */
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  min-width: 0;
+}
+
+/* Logos side-by-side */
+.brand-logos {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 12px;
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Base logo */
+.nav-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Emirates logo usually needs to be slightly smaller */
+.nav-logo--emirates {
+  height: 50px;
+}
+
+/* Brand text */
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  min-width: 0;
+}
+
+.brand-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.brand-subtitle {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  color: #f3f4f6;
+}
+
+/* Right actions */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* User pill */
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 32px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.15rem;
+}
+
+.user-pill i {
+  font-size: 1.1rem;
+}
+
+/* Logout */
+.btn-eau-outline {
+  color: #7a0026;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: white;
+  font-weight: 600;
+}
+.btn-eau-outline:hover {
+  /* color: rgba(255, 255, 255, 0.16); */
+  border-color: rgba(172, 0, 0, 0.8);
+  background: white;
+  transform: scale(1.1);
+}
+
+.btn-eau-outline:focus {
+  /* color: rgba(255, 255, 255, 0.16); */
+  border-color: rgba(172, 0, 0, 0.8) !important;
+  background: white !important;
+  transform: scale(1.1);
+}
+
+/* Mobile tweaks */
 @media (max-width: 576px) {
-  .emoji-seq {
-    font-size: 34px;
-    gap: 10px;
+  .nav-logo {
+    height: 36px;
+  }
+  .nav-logo--emirates {
+    height: 30px;
+  }
+  .brand-title {
+    font-size: 0.92rem;
+  }
+  .brand-subtitle {
+    font-size: 0.8rem;
   }
 }
