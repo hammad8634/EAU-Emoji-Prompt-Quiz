@@ -2,9 +2,8 @@
 // CONFIG (change in ONE place)
 // ============================
 const QUIZ_PLAN = [
-  { length: 6, count: 4 },
-  { length: 7, count: 4 },
-  { length: 8, count: 4 },
+  { length: 3, count: 2 },
+  { length: 3, count: 2 },
 ];
 
 // Target time for time-score normalization (seconds)
@@ -32,6 +31,7 @@ const COMP = {
 
   abIdx: "eauComp.abIdx",
   abPicks: "eauComp.abPicks",
+  completed: "eauComp.completed",
 };
 
 // ============================
@@ -61,6 +61,8 @@ function showView(viewId) {
     "viewScenario",
     "viewAB",
     "viewPython",
+    "viewCat1Result",
+    "viewCat3Result",
     "viewResults",
     "viewSummary",
   ];
@@ -427,40 +429,48 @@ function handleSaveNext() {
     return showAlert("Please enter your answer before saving.", "warning");
   }
 
+  // Save answer
   const answers = getAnswers();
   answers[idx] = normalizedInput;
   setAnswers(answers);
 
-  // move forward
   const nextIdx = idx + 1;
 
-  if (nextIdx >= total) {
-    setFinished(true);
-    stopTimer();
-
-    // compute score + time for category 1
-    const { correct, total: tot, timeTakenSeconds } = computeScores();
-    localStorage.setItem(
-      COMP.cat1Score,
-      JSON.stringify({ c: correct, total: tot }),
-    );
-
-    // store category 1 time
-    const times = getJson(COMP.catTimes, {});
-    times[1] = timeTakenSeconds;
-    setJson(COMP.catTimes, times);
-
-    // unlock category 2
-    setUnlocked(2);
-    localStorage.setItem(COMP.scIdx, "0");
-    setJson(COMP.scPrompts, []);
-
-    showScenario();
-    return;
-  } else {
+  // Move forward until last question
+  if (nextIdx < total) {
     setCurrentIdx(nextIdx);
     renderQuestion();
+    return;
   }
+
+  // =========================
+  // FINISH CATEGORY 1
+  // =========================
+  setFinished(true);
+  stopTimer();
+
+  const { correct, total: tot, timeTakenSeconds } = computeScores();
+
+  // Store Category 1 score + time
+  localStorage.setItem(
+    COMP.cat1Score,
+    JSON.stringify({ c: correct, total: tot }),
+  );
+
+  const times = getJson(COMP.catTimes, {});
+  times[1] = timeTakenSeconds;
+  setJson(COMP.catTimes, times);
+
+  // Unlock Category 2 + reset category 2 progress
+  setUnlocked(2);
+  localStorage.setItem(COMP.scIdx, "0");
+  setJson(COMP.scPrompts, []);
+
+  // IMPORTANT: clear catStart so Category 2 starts fresh when opened
+  localStorage.removeItem(COMP.catStart);
+
+  // Show detailed Category 1 results (then Continue -> categories)
+  showCat1Result();
 }
 
 function showCategories() {
@@ -475,18 +485,105 @@ function showCategories() {
 
 let scInterval = null;
 
+function showCat1Result() {
+  const { correct, total, timeTakenSeconds, rows } = computeScores();
+
+  // Score + Time
+  document.getElementById("cat1ScoreText").textContent = `${correct}/${total}`;
+  document.getElementById("cat1TimeText").textContent =
+    formatTime(timeTakenSeconds);
+
+  // Table
+  const tbody = document.getElementById("cat1ReviewBody");
+  tbody.innerHTML = "";
+
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    tr.className = r.isCorrect ? "table-success" : "table-danger";
+    tr.innerHTML = `
+      <td class="fw-semibold">${r.i}</td>
+      <td class="fs-5">${escapeHtml(r.emojis)}</td>
+      <td>${escapeHtml(r.userAns || "(blank)")}</td>
+      <td class="fw-semibold">${escapeHtml(r.correctAns)}</td>
+      <td class="fw-semibold">${r.isCorrect ? "✅" : "❌"}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  showView("viewCat1Result");
+}
+
+function showCat3Result() {
+  const qs = compData.category3_ab || [];
+  const picks = getJson(COMP.abPicks, []);
+
+  let correct = 0;
+  const tbody = document.getElementById("cat3ReviewBody");
+  tbody.innerHTML = "";
+
+  for (let i = 0; i < qs.length; i++) {
+    const userPick = picks[i] || "";
+    const correctPick = qs[i].correct || "";
+    const ok = userPick === correctPick;
+    if (ok) correct++;
+
+    const tr = document.createElement("tr");
+    tr.className = ok ? "table-success" : "table-danger";
+    tr.innerHTML = `
+      <td class="fw-semibold">${i + 1}</td>
+      <td>${escapeHtml(userPick || "-")}</td>
+      <td class="fw-semibold">${escapeHtml(correctPick || "-")}</td>
+      <td class="fw-semibold">${ok ? "✅" : "❌"}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // Save score
+  localStorage.setItem(
+    COMP.cat3Score,
+    JSON.stringify({ c: correct, total: qs.length }),
+  );
+
+  // Read stored time for Category 3
+  const times = getJson(COMP.catTimes, {});
+  const timeSeconds = times[3] || 0;
+
+  // UI values
+  document.getElementById("cat3ScoreText").textContent =
+    `${correct}/${qs.length}`;
+  document.getElementById("cat3TimeText").textContent = formatTime(timeSeconds);
+
+  showView("viewCat3Result");
+}
+
 function showScenario() {
-  // start timer once
+  // Start Category 2 timer ONCE
+  if (!localStorage.getItem(COMP.catStart)) startCategoryTimer();
+
   const idx = Number(localStorage.getItem(COMP.scIdx) || "0");
   const items = compData.category2_scenarios || [];
   const q = items[idx];
 
+  // Finished Category 2
   if (!q) {
-    // finish category 2
-    stopCategoryTimer(2);
+    // Save elapsed time for Category 2 (without stopCategoryTimer)
+    const start = Number(localStorage.getItem(COMP.catStart) || "0");
+    const sec = start
+      ? Math.max(0, Math.floor((Date.now() - start) / 1000))
+      : 0;
+
+    const times = getJson(COMP.catTimes, {});
+    times[2] = sec;
+    setJson(COMP.catTimes, times);
+
+    // Clear catStart so Category 3 starts fresh
+    localStorage.removeItem(COMP.catStart);
+
+    // Unlock Category 3 + init its state
     setUnlocked(3);
     localStorage.setItem(COMP.abIdx, "0");
     setJson(COMP.abPicks, []);
+
     showCategories();
     return;
   }
@@ -531,37 +628,81 @@ function scenarioNext() {
 let abInterval = null;
 let abChosen = "";
 
+function showCategoryResult({ title, lines }) {
+  $("catResTitle").textContent = title;
+
+  const tbody = $("catResBody");
+  tbody.innerHTML = "";
+  for (const [k, v] of lines) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="fw-semibold">${k}</td><td>${v}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  showView("viewCatResult");
+}
+
+function saveCategoryElapsed(catNum) {
+  const start = Number(localStorage.getItem(COMP.catStart) || "0");
+  const sec = start ? Math.max(0, Math.floor((Date.now() - start) / 1000)) : 0;
+
+  const times = getJson(COMP.catTimes, {});
+  times[catNum] = sec;
+  setJson(COMP.catTimes, times);
+
+  return sec;
+}
+
 function showAB() {
+  // Start Category 3 timer ONCE
+  if (!localStorage.getItem(COMP.catStart)) startCategoryTimer();
+
   const idx = Number(localStorage.getItem(COMP.abIdx) || "0");
   const qs = compData.category3_ab || [];
   const q = qs[idx];
 
-  document.getElementById("abQNum").textContent = String(idx + 1);
-  document.getElementById("abQTotal").textContent = String(qs.length);
-
+  // Finished Category 3
   if (!q) {
-    // finish category 3
-    const sec = stopCategoryTimer(3);
+    // Save elapsed time for Category 3 (without stopCategoryTimer)
+    const start = Number(localStorage.getItem(COMP.catStart) || "0");
+    const sec = start
+      ? Math.max(0, Math.floor((Date.now() - start) / 1000))
+      : 0;
 
+    const times = getJson(COMP.catTimes, {});
+    times[3] = sec;
+    setJson(COMP.catTimes, times);
+
+    // Clear catStart so Category 4 starts fresh
+    localStorage.removeItem(COMP.catStart);
+
+    // Compute score
     const picks = getJson(COMP.abPicks, []);
     let correct = 0;
     for (let i = 0; i < qs.length; i++) {
       if ((picks[i] || "") === (qs[i].correct || "")) correct++;
     }
+
     localStorage.setItem(
       COMP.cat3Score,
       JSON.stringify({ c: correct, total: qs.length }),
     );
 
+    // Unlock Category 4
     setUnlocked(4);
-    showPython();
+
+    // Show Category 3 detailed results FIRST
+    showCat3Result();
     return;
   }
+
+  document.getElementById("abQNum").textContent = String(idx + 1);
+  document.getElementById("abQTotal").textContent = String(qs.length);
 
   document.getElementById("abImgA").src = q.a;
   document.getElementById("abImgB").src = q.b;
 
-  // reset selection
+  // Reset selection
   abChosen = "";
   document.getElementById("btnAbNext").classList.add("d-none");
   document.getElementById("abPickA").classList.remove("ab-selected");
@@ -695,6 +836,7 @@ function showSummaryAndSubmit() {
     competitionVersion: compData.competitionVersion,
   }).catch(() => {});
 
+  localStorage.setItem(COMP.completed, "1");
   showView("viewSummary");
 }
 
@@ -806,95 +948,7 @@ function escapeHtml(s) {
 // ============================
 // Events
 // ============================
-// function wireEvents() {
-//   $("loginForm").addEventListener("submit", handleLoginSubmit);
 
-//   $("btnDemoFill").addEventListener("click", () => {
-//     $("loginUsername").value = "Hammad";
-//     $("loginPassword").value = "HammadEAU2026";
-//   });
-
-//   $("btnStart").addEventListener("click", () => {
-//     // Fresh start each time you press Start
-//     clearAttempt();
-//     startAttempt();
-//     showQuiz();
-//   });
-
-//   $("btnSaveNext").addEventListener("click", handleSaveNext);
-
-//   $("btnLogout").addEventListener("click", () => {
-//     stopTimer();
-//     localStorage.clear();
-//     setTopUserUI("");
-//     showView("viewLogin");
-//     showAlert("Logged out.", "info");
-//   });
-
-//   // Enter key = Save & Next
-//   $("answerInput").addEventListener("keydown", (e) => {
-//     if (e.key === "Enter") {
-//       e.preventDefault();
-//       handleSaveNext();
-//     }
-//   });
-
-//   // Legend modal
-//   const legendModalEl = document.getElementById("legendModal");
-//   const legendModal = new bootstrap.Modal(legendModalEl);
-
-//   $("btnShowLegend").addEventListener("click", () => legendModal.show());
-//   $("btnLegendInQuiz").addEventListener("click", () => legendModal.show());
-
-//   // Reset
-//   //   $("btnResetAll").addEventListener("click", () => {
-//   //     clearAttempt();
-//   //     showWelcome();
-//   //     showAlert("Attempt reset. You can start again.", "info");
-//   //   });
-
-//   //   $("btnResetAllTop").addEventListener("click", () => {
-//   //     clearAttempt();
-//   //     showWelcome();
-//   //     showAlert("Attempt reset. You can start again.", "info");
-//   //   });
-
-//   //   $("btnBackToWelcome").addEventListener("click", () => {
-//   //     showWelcome();
-//   //   });
-
-//   // Category buttons
-//   document.getElementById("catBtn1").addEventListener("click", () => {
-//     clearAttempt();
-//     startAttempt();
-//     showQuiz();
-//   });
-//   document.getElementById("catBtn2").addEventListener("click", () => {
-//     startCategoryTimer();
-//     showScenario();
-//   });
-//   document.getElementById("catBtn2").addEventListener("click", () => {
-//     startCategoryTimer();
-//     showScenario();
-//   });
-//   document.getElementById("catBtn4").addEventListener("click", showPython);
-
-//   // Scenario next
-//   document.getElementById("btnScNext").addEventListener("click", scenarioNext);
-
-//   // AB events
-//   document
-//     .getElementById("abPickA")
-//     .addEventListener("click", () => chooseAB("A"));
-//   document
-//     .getElementById("abPickB")
-//     .addEventListener("click", () => chooseAB("B"));
-//   document.getElementById("btnAbNext").addEventListener("click", abNext);
-
-//   // Python events
-//   document.getElementById("btnPyStart").addEventListener("click", pyStart);
-//   document.getElementById("btnPySubmit").addEventListener("click", pySubmit);
-// }
 const on = (id, event, handler) => {
   const el = document.getElementById(id);
   if (el) el.addEventListener(event, handler);
@@ -915,6 +969,13 @@ function wireEvents() {
     startAttempt();
     showQuiz();
   });
+
+  on("btnCatResBack", "click", () => {
+    showCategories();
+  });
+
+  on("btnCat1Continue", "click", () => showCategories());
+  on("btnCat3Continue", "click", () => showCategories());
 
   // Emoji quiz next
   on("btnSaveNext", "click", handleSaveNext);
@@ -993,7 +1054,6 @@ function wireEvents() {
   on("btnPyStart", "click", pyStart);
   on("btnPySubmit", "click", pySubmit);
 }
-
 
 // ============================
 // SEND RESULTS TO GOOGLE FORM
@@ -1092,6 +1152,10 @@ async function submitCompetitionToGoogleForm(payload) {
       return;
     }
 
+    if (localStorage.getItem(COMP.completed) === "1") {
+      showSummaryAndSubmit(); 
+      return;
+    }
     // If finished, go to results; else if started, resume quiz; else welcome
     // competition mode: always go to categories after login
     showCategories();

@@ -264,6 +264,10 @@ a:hover {
   white-space: nowrap;
 }
 
+#scTitle {
+  white-space: pre-line;
+}
+
 .brand-subtitle {
   font-size: 0.85rem;
   opacity: 0.9;
@@ -349,14 +353,25 @@ a:hover {
 }
 .cat-card:hover {
   transform: translateY(-2px);
+  background-color: #7a000076;
   box-shadow: 0 14px 35px rgba(17, 24, 39, 0.12);
+}
+.cat-card:hover .cat-sub {
+  color: #5a001c;
 }
 .cat-card:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
+}
+.cat-card:disabled:hover {
+  transform: none;
+  color: black;
+  background-color: white;
+  box-shadow: none;
 }
 .cat-title {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.05rem;
 }
 .cat-sub {
@@ -396,7 +411,26 @@ a:hover {
   border-radius: 14px;
   display: block;
 }
-.ab-selected {
-  outline: 3px solid rgba(122, 0, 38, 0.6);
-  box-shadow: 0 0 0 6px rgba(122, 0, 38, 0.12);
+
+/* Remove default button focus outline (Bootstrap adds it) */
+#abPickA:focus,
+#abPickB:focus,
+.ab-card:focus,
+.ab-card:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Make selection STAY strongly visible on the whole card */
+.ab-card.ab-selected {
+  border-color: rgba(122, 0, 38, 0.9);
+  box-shadow:
+    0 0 0 4px rgba(122, 0, 38, 0.15),
+    0 14px 35px rgba(17, 24, 39, 0.12);
+}
+
+/* Also highlight the image (so it never feels like it disappeared) */
+.ab-card.ab-selected .ab-img {
+  outline: 3px solid rgba(122, 0, 38, 0.75);
+  outline-offset: -3px;
 }

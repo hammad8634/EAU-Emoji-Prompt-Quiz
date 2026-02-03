@@ -14,93 +14,96 @@
         },
         {
             "id": 2,
-            "title": "Scenario 2",
+            "title": "Smart Classroom in the Year 2040",
             "requirements": [
-                "..."
+                "A classroom with clear, recognizable students and a teacher",
+                "Include at least two obvious futuristic/AI-enhanced elements (e.g., holographic displays, AR glasses, robot teaching assistants, interactive desks).",
+                "Students using digital tablets or holographic screens",
+                "Modern classroom environment with clear teacher-AI interaction"
             ]
         },
         {
             "id": 3,
-            "title": "Scenario 3",
+            "title": "Sustainable Smart City Powered by AI",
             "requirements": [
-                "..."
+                "A daytime cityscape that clearly integrates green energy (solar panels, wind turbines)",
+                "Renewable energy sources (solar panels, wind turbines)",
+                "Green spaces (parks, vertical gardens)",
+                "AI-enabled transport or monitoring systems",
+                "Smart infrastructure (autonomous vehicles, sensor poles)"
             ]
         },
         {
             "id": 4,
-            "title": "Scenario 4",
+            "title": "AI Protecting Wildlife or the Environment",
             "requirements": [
-                "..."
+                "Animals and natural environment (forest, ocean, etc. with wildlife present)",
+                "AI-powered device (e.g., drone, camera trap, robotic planter) actively operating",
+                "Conservation theme",
+                "Natural lighting and environment",
+                "Non-intrusive AI presence"
             ]
         },
         {
             "id": 5,
-            "title": "Scenario 5",
+            "title": "Humans and AI Working Together Professionally",
             "requirements": [
-                "..."
+                "Humans and AI (robots, holographic avatars, etc.) side by side",
+                "Workplace setting (office, lab, factory, hospital)",
+                "Clear collaboration theme",
+                "AI assisting, not replacing humans",
+                "Realistic task interaction"
             ]
         }
     ],
     "category3_ab": [
         {
             "id": 1,
-            "a": "./assets/ab/q01_a.jpg",
-            "b": "./assets/ab/q01_b.jpg",
+            "a": "./assets/ab/q01_a.png",
+            "b": "./assets/ab/q01_b.png",
             "correct": "A"
         },
         {
             "id": 2,
-            "a": "./assets/ab/q02_a.jpg",
-            "b": "./assets/ab/q02_b.jpg",
-            "correct": "B"
-        },
-        {
-            "id": 3,
-            "a": "./assets/ab/q03_a.jpg",
-            "b": "./assets/ab/q03_b.jpg",
+            "a": "./assets/ab/q02_a.png",
+            "b": "./assets/ab/q02_b.png",
             "correct": "A"
         },
         {
-            "id": 4,
-            "a": "./assets/ab/q04_a.jpg",
-            "b": "./assets/ab/q04_b.jpg",
+            "id": 3,
+            "a": "./assets/ab/q03_a.png",
+            "b": "./assets/ab/q03_b.png",
             "correct": "B"
         },
         {
+            "id": 4,
+            "a": "./assets/ab/q04_a.png",
+            "b": "./assets/ab/q04_b.png",
+            "correct": "A"
+        },
+        {
             "id": 5,
-            "a": "./assets/ab/q05_a.jpg",
-            "b": "./assets/ab/q05_b.jpg",
+            "a": "./assets/ab/q05_a.png",
+            "b": "./assets/ab/q05_b.png",
             "correct": "A"
         },
         {
             "id": 6,
-            "a": "./assets/ab/q06_a.jpg",
-            "b": "./assets/ab/q06_b.jpg",
-            "correct": "B"
+            "a": "./assets/ab/q06_a.png",
+            "b": "./assets/ab/q06_b.png",
+            "correct": "A"
         },
         {
             "id": 7,
-            "a": "./assets/ab/q07_a.jpg",
-            "b": "./assets/ab/q07_b.jpg",
-            "correct": "A"
+            "a": "./assets/ab/q07_a.png",
+            "b": "./assets/ab/q07_b.png",
+            "correct": "B"
         },
         {
             "id": 8,
-            "a": "./assets/ab/q08_a.jpg",
-            "b": "./assets/ab/q08_b.jpg",
-            "correct": "B"
-        },
-        {
-            "id": 9,
-            "a": "./assets/ab/q09_a.jpg",
-            "b": "./assets/ab/q09_b.jpg",
+            "a": "./assets/ab/q08_a.png",
+            "b": "./assets/ab/q08_b.png",
             "correct": "A"
-        },
-        {
-            "id": 10,
-            "a": "./assets/ab/q10_a.jpg",
-            "b": "./assets/ab/q10_b.jpg",
-            "correct": "B"
         }
     ],
     "category4_python": {
