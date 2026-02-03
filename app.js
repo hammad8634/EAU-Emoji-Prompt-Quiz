@@ -1,10 +1,7 @@
 // ============================
 // CONFIG (change in ONE place)
 // ============================
-const QUIZ_PLAN = [
-  { length: 3, count: 2 },
-  { length: 3, count: 2 },
-];
+const QUIZ_PLAN = [];
 
 // Target time for time-score normalization (seconds)
 const TARGET_TIME_SECONDS = 240; // e.g., 4 minutes
@@ -131,41 +128,8 @@ async function loadData() {
   // Footer version
   $("quizVersionFooter").textContent = `Quiz: ${quiz.quizVersion}`;
 
-  // Validate plan vs quiz
-  validateQuizPlan();
-
   // Build legend table
   renderLegend();
-  renderPlanList();
-}
-
-function validateQuizPlan() {
-  const qs = quiz.questions || [];
-  const expectedTotal = QUIZ_PLAN.reduce((sum, x) => sum + x.count, 0);
-
-  if (qs.length !== expectedTotal) {
-    showAlert(
-      `Quiz set has ${qs.length} questions, but plan expects ${expectedTotal}. Please fix quiz_set.json.`,
-      "warning",
-    );
-  }
-
-  // Count by length
-  const counts = new Map();
-  for (const q of qs) {
-    const len = (q.emojis || []).length;
-    counts.set(len, (counts.get(len) || 0) + 1);
-  }
-
-  for (const p of QUIZ_PLAN) {
-    const have = counts.get(p.length) || 0;
-    if (have !== p.count) {
-      showAlert(
-        `Quiz set length mismatch: expected ${p.count} questions of length ${p.length}, but found ${have}.`,
-        "warning",
-      );
-    }
-  }
 }
 
 // ============================
@@ -183,16 +147,6 @@ function renderLegend() {
       <td class="text-muted">${item.meaning || ""}</td>
     `;
     tbody.appendChild(tr);
-  }
-}
-
-function renderPlanList() {
-  const el = $("planList");
-  el.innerHTML = "";
-  for (const p of QUIZ_PLAN) {
-    const li = document.createElement("li");
-    li.innerHTML = `<strong>${p.count}</strong> questions × <strong>${p.length}</strong> emojis`;
-    el.appendChild(li);
   }
 }
 
@@ -1153,7 +1107,7 @@ async function submitCompetitionToGoogleForm(payload) {
     }
 
     if (localStorage.getItem(COMP.completed) === "1") {
-      showSummaryAndSubmit(); 
+      showSummaryAndSubmit();
       return;
     }
     // If finished, go to results; else if started, resume quiz; else welcome
