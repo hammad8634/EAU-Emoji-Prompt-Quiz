@@ -20,6 +20,20 @@ const LS = {
   quizVersion: "eauEmojiQuiz.version",
 };
 
+const COMP = {
+  unlocked: "eauComp.unlocked", // 1..4
+  catStart: "eauComp.catStartMs", // start ms for current category
+  catTimes: "eauComp.catTimes", // {1:sec,2:sec,3:sec,4:sec}
+  cat1Score: "eauComp.cat1Score", // {c,total}
+  cat3Score: "eauComp.cat3Score", // {c,total}
+
+  scIdx: "eauComp.scIdx",
+  scPrompts: "eauComp.scPrompts",
+
+  abIdx: "eauComp.abIdx",
+  abPicks: "eauComp.abPicks",
+};
+
 // ============================
 // DOM helpers
 // ============================
@@ -39,7 +53,17 @@ function hideAlert() {
 }
 
 function showView(viewId) {
-  const views = ["viewLogin", "viewWelcome", "viewQuiz", "viewResults"];
+  const views = [
+    "viewLogin",
+    "viewWelcome",
+    "viewCategories",
+    "viewQuiz",
+    "viewScenario",
+    "viewAB",
+    "viewPython",
+    "viewResults",
+    "viewSummary",
+  ];
   for (const v of views) $(v).classList.add("d-none");
   $(viewId).classList.remove("d-none");
 }
@@ -81,6 +105,7 @@ function setTopUserUI(username) {
 // ============================
 let emojiBank = [];
 let quiz = { quizVersion: "", questions: [] };
+let compData = null; // competition.json
 
 let timerInterval = null;
 
@@ -88,16 +113,18 @@ let timerInterval = null;
 // Load JSON
 // ============================
 async function loadData() {
-  const [bankRes, quizRes] = await Promise.all([
+  const [bankRes, quizRes, compRes] = await Promise.all([
     fetch("./emoji_bank.json", { cache: "no-store" }),
     fetch("./quiz_set.json", { cache: "no-store" }),
+    fetch("./competition.json", { cache: "no-store" }),
   ]);
-
+  if (!compRes.ok) throw new Error("Failed to load competition.json");
   if (!bankRes.ok) throw new Error("Failed to load emoji_bank.json");
   if (!quizRes.ok) throw new Error("Failed to load quiz_set.json");
 
   emojiBank = await bankRes.json();
   quiz = await quizRes.json();
+  compData = await compRes.json();
 
   // Footer version
   $("quizVersionFooter").textContent = `Quiz: ${quiz.quizVersion}`;
@@ -216,6 +243,42 @@ function getAnswers() {
   }
 }
 
+function getJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
+}
+
+function startCategoryTimer() {
+  localStorage.setItem(COMP.catStart, String(Date.now()));
+}
+
+function stopCategoryTimer(catNum) {
+  const start = Number(localStorage.getItem(COMP.catStart) || "0");
+  const sec = start ? Math.max(0, Math.floor((Date.now() - start) / 1000)) : 0;
+
+  const times = getJson(COMP.catTimes, {});
+  times[catNum] = sec;
+  setJson(COMP.catTimes, times);
+
+  localStorage.removeItem(COMP.catStart);
+  return sec;
+}
+
+function setUnlocked(catNum) {
+  localStorage.setItem(COMP.unlocked, String(catNum));
+}
+
+function getUnlocked() {
+  return Number(localStorage.getItem(COMP.unlocked) || "1");
+}
+
+function setJson(key, obj) {
+  localStorage.setItem(key, JSON.stringify(obj));
+}
+
 function setAnswers(arr) {
   localStorage.setItem(LS.answers, JSON.stringify(arr));
 }
@@ -257,18 +320,19 @@ function handleLoginSubmit(e) {
     clearAttempt();
   }
 
-  showWelcome();
+  // initialize competition on first login
+  if (!localStorage.getItem(COMP.unlocked)) setUnlocked(1);
+  showCategories();
 }
 
-function showWelcome() {
-  const username = getUser();
-  $("welcomeName").textContent = username || "Student";
+// function showWelcome() {
+//   const username = getUser();
+//   $("welcomeName").textContent = username || "Student";
 
-  // Top UI
-  setTopUserUI(username);
+//   setTopUserUI(username);
 
-  showView("viewWelcome");
-}
+//   showView("viewWelcome");
+// }
 
 // ============================
 // Views: Quiz
@@ -286,6 +350,12 @@ function startTimer() {
 function stopTimer() {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = null;
+}
+function stopAllClocks() {
+  if (scInterval) clearInterval(scInterval);
+  if (abInterval) clearInterval(abInterval);
+  if (pyInterval) clearInterval(pyInterval);
+  scInterval = abInterval = pyInterval = null;
 }
 
 function renderQuestion() {
@@ -365,14 +435,267 @@ function handleSaveNext() {
   const nextIdx = idx + 1;
 
   if (nextIdx >= total) {
-    // finish
     setFinished(true);
     stopTimer();
-    showResults();
+
+    // compute score + time for category 1
+    const { correct, total: tot, timeTakenSeconds } = computeScores();
+    localStorage.setItem(
+      COMP.cat1Score,
+      JSON.stringify({ c: correct, total: tot }),
+    );
+
+    // store category 1 time
+    const times = getJson(COMP.catTimes, {});
+    times[1] = timeTakenSeconds;
+    setJson(COMP.catTimes, times);
+
+    // unlock category 2
+    setUnlocked(2);
+    localStorage.setItem(COMP.scIdx, "0");
+    setJson(COMP.scPrompts, []);
+
+    showScenario();
+    return;
   } else {
     setCurrentIdx(nextIdx);
     renderQuestion();
   }
+}
+
+function showCategories() {
+  showView("viewCategories");
+  const u = getUnlocked();
+
+  for (let i = 1; i <= 4; i++) {
+    const btn = document.getElementById(`catBtn${i}`);
+    if (btn) btn.disabled = i !== u;
+  }
+}
+
+let scInterval = null;
+
+function showScenario() {
+  // start timer once
+  const idx = Number(localStorage.getItem(COMP.scIdx) || "0");
+  const items = compData.category2_scenarios || [];
+  const q = items[idx];
+
+  if (!q) {
+    // finish category 2
+    stopCategoryTimer(2);
+    setUnlocked(3);
+    localStorage.setItem(COMP.abIdx, "0");
+    setJson(COMP.abPicks, []);
+    showCategories();
+    return;
+  }
+
+  document.getElementById("scTitle").textContent =
+    `Scenario ${idx + 1}/${items.length}: ${q.title}`;
+
+  const ul = document.getElementById("scReqList");
+  ul.innerHTML = "";
+  (q.requirements || []).forEach((r) => {
+    const li = document.createElement("li");
+    li.textContent = r;
+    ul.appendChild(li);
+  });
+
+  const prompts = getJson(COMP.scPrompts, []);
+  document.getElementById("scPrompt").value = prompts[idx] || "";
+
+  showView("viewScenario");
+  startScenarioClock();
+}
+
+function startScenarioClock() {
+  if (scInterval) clearInterval(scInterval);
+  scInterval = setInterval(() => {
+    const start = Number(localStorage.getItem(COMP.catStart) || "0");
+    const sec = start ? Math.floor((Date.now() - start) / 1000) : 0;
+    document.getElementById("scTimer").textContent = formatTime(sec);
+  }, 250);
+}
+
+function scenarioNext() {
+  const idx = Number(localStorage.getItem(COMP.scIdx) || "0");
+  const prompts = getJson(COMP.scPrompts, []);
+  prompts[idx] = (document.getElementById("scPrompt").value || "").trim();
+  setJson(COMP.scPrompts, prompts);
+
+  localStorage.setItem(COMP.scIdx, String(idx + 1));
+  showScenario();
+}
+
+let abInterval = null;
+let abChosen = "";
+
+function showAB() {
+  const idx = Number(localStorage.getItem(COMP.abIdx) || "0");
+  const qs = compData.category3_ab || [];
+  const q = qs[idx];
+
+  document.getElementById("abQNum").textContent = String(idx + 1);
+  document.getElementById("abQTotal").textContent = String(qs.length);
+
+  if (!q) {
+    // finish category 3
+    const sec = stopCategoryTimer(3);
+
+    const picks = getJson(COMP.abPicks, []);
+    let correct = 0;
+    for (let i = 0; i < qs.length; i++) {
+      if ((picks[i] || "") === (qs[i].correct || "")) correct++;
+    }
+    localStorage.setItem(
+      COMP.cat3Score,
+      JSON.stringify({ c: correct, total: qs.length }),
+    );
+
+    setUnlocked(4);
+    showPython();
+    return;
+  }
+
+  document.getElementById("abImgA").src = q.a;
+  document.getElementById("abImgB").src = q.b;
+
+  // reset selection
+  abChosen = "";
+  document.getElementById("btnAbNext").classList.add("d-none");
+  document.getElementById("abPickA").classList.remove("ab-selected");
+  document.getElementById("abPickB").classList.remove("ab-selected");
+
+  showView("viewAB");
+  startABClock();
+}
+
+function startABClock() {
+  if (abInterval) clearInterval(abInterval);
+  abInterval = setInterval(() => {
+    const start = Number(localStorage.getItem(COMP.catStart) || "0");
+    const sec = start ? Math.floor((Date.now() - start) / 1000) : 0;
+    document.getElementById("abTimer").textContent = formatTime(sec);
+  }, 250);
+}
+
+function chooseAB(letter) {
+  abChosen = letter;
+  document
+    .getElementById("abPickA")
+    .classList.toggle("ab-selected", letter === "A");
+  document
+    .getElementById("abPickB")
+    .classList.toggle("ab-selected", letter === "B");
+  document.getElementById("btnAbNext").classList.remove("d-none");
+}
+
+function abNext() {
+  const idx = Number(localStorage.getItem(COMP.abIdx) || "0");
+  const picks = getJson(COMP.abPicks, []);
+  picks[idx] = abChosen;
+  setJson(COMP.abPicks, picks);
+
+  localStorage.setItem(COMP.abIdx, String(idx + 1));
+  showAB();
+}
+
+let pyInterval = null;
+
+function showPython() {
+  showView("viewPython");
+
+  document.getElementById("pyTitle").textContent =
+    compData.category4_python.title;
+
+  const ul = document.getElementById("pyInstr");
+  ul.innerHTML = "";
+  (compData.category4_python.instructions || []).forEach((x) => {
+    const li = document.createElement("li");
+    li.textContent = x;
+    ul.appendChild(li);
+  });
+
+  document.getElementById("btnPyStart").classList.remove("d-none");
+  document.getElementById("btnPySubmit").classList.add("d-none");
+  document.getElementById("pyTimer").textContent = "00:00";
+}
+
+function pyStart() {
+  startCategoryTimer();
+  document.getElementById("btnPyStart").classList.add("d-none");
+  document.getElementById("btnPySubmit").classList.remove("d-none");
+  startPyClock();
+}
+
+function startPyClock() {
+  if (pyInterval) clearInterval(pyInterval);
+  pyInterval = setInterval(() => {
+    const start = Number(localStorage.getItem(COMP.catStart) || "0");
+    const sec = start ? Math.floor((Date.now() - start) / 1000) : 0;
+    document.getElementById("pyTimer").textContent = formatTime(sec);
+  }, 250);
+}
+
+function pySubmit() {
+  stopCategoryTimer(4);
+  showSummaryAndSubmit();
+}
+
+function showSummaryAndSubmit() {
+  const name = getUser();
+
+  const times = getJson(COMP.catTimes, {});
+  const cat1 = getJson(COMP.cat1Score, { c: 0, total: 0 });
+  const cat3 = getJson(COMP.cat3Score, { c: 0, total: 0 });
+
+  const rows = [
+    {
+      label: "Category 1 (Emoji)",
+      marks: `${cat1.c}/${cat1.total}`,
+      time: formatTime(times[1] || 0),
+    },
+    {
+      label: "Category 2 (Scenario)",
+      marks: "—",
+      time: formatTime(times[2] || 0),
+    },
+    {
+      label: "Category 3 (Which is AI?)",
+      marks: `${cat3.c}/${cat3.total}`,
+      time: formatTime(times[3] || 0),
+    },
+    {
+      label: "Category 4 (Python)",
+      marks: "—",
+      time: formatTime(times[4] || 0),
+    },
+  ];
+
+  const tbody = document.getElementById("sumBody");
+  tbody.innerHTML = "";
+  rows.forEach((r) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="fw-semibold">${r.label}</td><td>${r.marks}</td><td>${r.time}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Submit to same Google form (extend your form fields for cat times & cat3 marks)
+  submitCompetitionToGoogleForm({
+    name,
+    cat1Correct: cat1.c,
+    cat1Total: cat1.total,
+    cat1Time: times[1] || 0,
+    cat2Time: times[2] || 0,
+    cat3Correct: cat3.c,
+    cat3Total: cat3.total,
+    cat3Time: times[3] || 0,
+    cat4Time: times[4] || 0,
+    competitionVersion: compData.competitionVersion,
+  }).catch(() => {});
+
+  showView("viewSummary");
 }
 
 // ============================
@@ -438,18 +761,6 @@ function showResults() {
   const { correct, total, timeTakenSeconds, finalScore, rows } =
     computeScores();
 
-  const username = getUser();
-  const finalPercent = Math.round(finalScore * 100);
-
-  submitToGoogleForm({
-    name: username,
-    correct,
-    total,
-    timeSeconds: timeTakenSeconds,
-    finalPercent,
-    quizVersion: quiz.quizVersion,
-  }).catch(() => {});
-
   $("statCorrect").textContent = String(correct);
   $("statTotal").textContent = String(total);
   $("statTime").textContent = formatTime(timeTakenSeconds);
@@ -495,63 +806,194 @@ function escapeHtml(s) {
 // ============================
 // Events
 // ============================
-function wireEvents() {
-  $("loginForm").addEventListener("submit", handleLoginSubmit);
+// function wireEvents() {
+//   $("loginForm").addEventListener("submit", handleLoginSubmit);
 
-  $("btnDemoFill").addEventListener("click", () => {
+//   $("btnDemoFill").addEventListener("click", () => {
+//     $("loginUsername").value = "Hammad";
+//     $("loginPassword").value = "HammadEAU2026";
+//   });
+
+//   $("btnStart").addEventListener("click", () => {
+//     // Fresh start each time you press Start
+//     clearAttempt();
+//     startAttempt();
+//     showQuiz();
+//   });
+
+//   $("btnSaveNext").addEventListener("click", handleSaveNext);
+
+//   $("btnLogout").addEventListener("click", () => {
+//     stopTimer();
+//     localStorage.clear();
+//     setTopUserUI("");
+//     showView("viewLogin");
+//     showAlert("Logged out.", "info");
+//   });
+
+//   // Enter key = Save & Next
+//   $("answerInput").addEventListener("keydown", (e) => {
+//     if (e.key === "Enter") {
+//       e.preventDefault();
+//       handleSaveNext();
+//     }
+//   });
+
+//   // Legend modal
+//   const legendModalEl = document.getElementById("legendModal");
+//   const legendModal = new bootstrap.Modal(legendModalEl);
+
+//   $("btnShowLegend").addEventListener("click", () => legendModal.show());
+//   $("btnLegendInQuiz").addEventListener("click", () => legendModal.show());
+
+//   // Reset
+//   //   $("btnResetAll").addEventListener("click", () => {
+//   //     clearAttempt();
+//   //     showWelcome();
+//   //     showAlert("Attempt reset. You can start again.", "info");
+//   //   });
+
+//   //   $("btnResetAllTop").addEventListener("click", () => {
+//   //     clearAttempt();
+//   //     showWelcome();
+//   //     showAlert("Attempt reset. You can start again.", "info");
+//   //   });
+
+//   //   $("btnBackToWelcome").addEventListener("click", () => {
+//   //     showWelcome();
+//   //   });
+
+//   // Category buttons
+//   document.getElementById("catBtn1").addEventListener("click", () => {
+//     clearAttempt();
+//     startAttempt();
+//     showQuiz();
+//   });
+//   document.getElementById("catBtn2").addEventListener("click", () => {
+//     startCategoryTimer();
+//     showScenario();
+//   });
+//   document.getElementById("catBtn2").addEventListener("click", () => {
+//     startCategoryTimer();
+//     showScenario();
+//   });
+//   document.getElementById("catBtn4").addEventListener("click", showPython);
+
+//   // Scenario next
+//   document.getElementById("btnScNext").addEventListener("click", scenarioNext);
+
+//   // AB events
+//   document
+//     .getElementById("abPickA")
+//     .addEventListener("click", () => chooseAB("A"));
+//   document
+//     .getElementById("abPickB")
+//     .addEventListener("click", () => chooseAB("B"));
+//   document.getElementById("btnAbNext").addEventListener("click", abNext);
+
+//   // Python events
+//   document.getElementById("btnPyStart").addEventListener("click", pyStart);
+//   document.getElementById("btnPySubmit").addEventListener("click", pySubmit);
+// }
+const on = (id, event, handler) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener(event, handler);
+};
+
+function wireEvents() {
+  // Login
+  on("loginForm", "submit", handleLoginSubmit);
+
+  on("btnDemoFill", "click", () => {
     $("loginUsername").value = "Hammad";
     $("loginPassword").value = "HammadEAU2026";
   });
 
-  $("btnStart").addEventListener("click", () => {
-    // Fresh start each time you press Start
+  // Category 1 start (Emoji)
+  on("btnStart", "click", () => {
     clearAttempt();
     startAttempt();
     showQuiz();
   });
 
-  $("btnSaveNext").addEventListener("click", handleSaveNext);
+  // Emoji quiz next
+  on("btnSaveNext", "click", handleSaveNext);
 
-  $("btnLogout").addEventListener("click", () => {
+  // Logout
+  on("btnLogout", "click", () => {
     stopTimer();
+    // stop other category timers too (prevents ghost intervals)
+    if (scInterval) clearInterval(scInterval);
+    scInterval = null;
+    if (abInterval) clearInterval(abInterval);
+    abInterval = null;
+    if (pyInterval) clearInterval(pyInterval);
+    pyInterval = null;
+
     localStorage.clear();
     setTopUserUI("");
     showView("viewLogin");
     showAlert("Logged out.", "info");
   });
 
-  // Enter key = Save & Next
-  $("answerInput").addEventListener("keydown", (e) => {
+  // Enter key = Save & Next (only exists in emoji view)
+  on("answerInput", "keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleSaveNext();
     }
   });
 
-  // Legend modal
+  // Legend modal (only if modal exists)
   const legendModalEl = document.getElementById("legendModal");
-  const legendModal = new bootstrap.Modal(legendModalEl);
+  if (legendModalEl) {
+    const legendModal = new bootstrap.Modal(legendModalEl);
+    on("btnShowLegend", "click", () => legendModal.show());
+    on("btnLegendInQuiz", "click", () => legendModal.show());
+  }
 
-  $("btnShowLegend").addEventListener("click", () => legendModal.show());
-  $("btnLegendInQuiz").addEventListener("click", () => legendModal.show());
+  // =========================
+  // Competition Category Buttons
+  // =========================
+  on("catBtn1", "click", () => {
+    clearAttempt();
+    startAttempt();
+    showQuiz();
+  });
 
-  // Reset
-  //   $("btnResetAll").addEventListener("click", () => {
-  //     clearAttempt();
-  //     showWelcome();
-  //     showAlert("Attempt reset. You can start again.", "info");
-  //   });
+  on("catBtn2", "click", () => {
+    // timer is handled inside showScenario() too, but this is ok
+    showScenario();
+  });
 
-  //   $("btnResetAllTop").addEventListener("click", () => {
-  //     clearAttempt();
-  //     showWelcome();
-  //     showAlert("Attempt reset. You can start again.", "info");
-  //   });
+  on("catBtn3", "click", () => {
+    // IMPORTANT: this was missing before
+    showAB();
+  });
 
-  //   $("btnBackToWelcome").addEventListener("click", () => {
-  //     showWelcome();
-  //   });
+  on("catBtn4", "click", () => {
+    showPython();
+  });
+
+  // =========================
+  // Category 2 (Scenario)
+  // =========================
+  on("btnScNext", "click", scenarioNext);
+
+  // =========================
+  // Category 3 (A/B)
+  // =========================
+  on("abPickA", "click", () => chooseAB("A"));
+  on("abPickB", "click", () => chooseAB("B"));
+  on("btnAbNext", "click", abNext);
+
+  // =========================
+  // Category 4 (Python)
+  // =========================
+  on("btnPyStart", "click", pyStart);
+  on("btnPySubmit", "click", pySubmit);
 }
+
 
 // ============================
 // SEND RESULTS TO GOOGLE FORM
@@ -592,6 +1034,43 @@ async function submitToGoogleForm({
   });
 }
 
+async function submitCompetitionToGoogleForm(payload) {
+  const FORM_URL =
+    "https://docs.google.com/forms/d/e/1FAIpQLSd5xrfG94GMqbpLmdZ4kGkXvBHMioLkEz2_MFuI1dy-O1SdUg/formResponse";
+
+  const ENTRY = {
+    name: "entry.1318314687",
+    cat1Correct: "entry.1904729944",
+    cat1Total: "entry.1770815127",
+    cat1Time: "entry.576033853",
+    cat2Time: "entry.1892709739",
+    cat3Correct: "entry.2133166864",
+    cat3Total: "entry.1271692548",
+    cat3Time: "entry.1080138411",
+    cat4Time: "entry.3925717",
+    competitionVersion: "entry.1742727032",
+  };
+
+  const data = new URLSearchParams();
+  data.append(ENTRY.name, payload.name);
+  data.append(ENTRY.cat1Correct, String(payload.cat1Correct));
+  data.append(ENTRY.cat1Total, String(payload.cat1Total));
+  data.append(ENTRY.cat1Time, String(payload.cat1Time));
+  data.append(ENTRY.cat2Time, String(payload.cat2Time));
+  data.append(ENTRY.cat3Correct, String(payload.cat3Correct));
+  data.append(ENTRY.cat3Total, String(payload.cat3Total));
+  data.append(ENTRY.cat3Time, String(payload.cat3Time));
+  data.append(ENTRY.cat4Time, String(payload.cat4Time));
+  data.append(ENTRY.competitionVersion, payload.competitionVersion);
+
+  await fetch(FORM_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: data.toString(),
+  });
+}
+
 // ============================
 // Boot
 // ============================
@@ -614,13 +1093,8 @@ async function submitToGoogleForm({
     }
 
     // If finished, go to results; else if started, resume quiz; else welcome
-    if (hasStart && finished) {
-      showResults();
-    } else if (hasStart && !finished) {
-      showQuiz();
-    } else {
-      showWelcome();
-    }
+    // competition mode: always go to categories after login
+    showCategories();
   } catch (err) {
     console.error(err);
     showView("viewLogin");

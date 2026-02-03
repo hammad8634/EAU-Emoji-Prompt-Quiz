@@ -331,3 +331,72 @@ a:hover {
     font-size: 0.8rem;
   }
 }
+
+/* =========================
+   END Category 1 STYLES
+   ========================= */
+
+/* Category cards */
+.cat-card {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  padding: 18px;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    opacity 0.1s ease;
+}
+.cat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 35px rgba(17, 24, 39, 0.12);
+}
+.cat-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.cat-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.cat-sub {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* A/B cards */
+.ab-card {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  padding: 12px;
+  position: relative;
+  text-align: left;
+}
+.ab-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 35px rgba(17, 24, 39, 0.12);
+}
+.ab-label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.65);
+  color: white;
+  font-weight: 800;
+}
+.ab-img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+}
+.ab-selected {
+  outline: 3px solid rgba(122, 0, 38, 0.6);
+  box-shadow: 0 0 0 6px rgba(122, 0, 38, 0.12);
+}

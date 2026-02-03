@@ -1,0 +1,114 @@
+{
+    "competitionVersion": "EAU-2026-comp-v1",
+    "category2_scenarios": [
+        {
+            "id": 1,
+            "title": "AI Helping During an Extreme Heat Wave",
+            "requirements": [
+                "City environment",
+                "Visible heat indicators (sun, heat waves)",
+                "Heat haze / people fanning themselves",
+                "AI technology visible (robot, drone, smart sign)",
+                "Direct aid (water, cooling, shade)"
+            ]
+        },
+        {
+            "id": 2,
+            "title": "Scenario 2",
+            "requirements": [
+                "..."
+            ]
+        },
+        {
+            "id": 3,
+            "title": "Scenario 3",
+            "requirements": [
+                "..."
+            ]
+        },
+        {
+            "id": 4,
+            "title": "Scenario 4",
+            "requirements": [
+                "..."
+            ]
+        },
+        {
+            "id": 5,
+            "title": "Scenario 5",
+            "requirements": [
+                "..."
+            ]
+        }
+    ],
+    "category3_ab": [
+        {
+            "id": 1,
+            "a": "./assets/ab/q01_a.jpg",
+            "b": "./assets/ab/q01_b.jpg",
+            "correct": "A"
+        },
+        {
+            "id": 2,
+            "a": "./assets/ab/q02_a.jpg",
+            "b": "./assets/ab/q02_b.jpg",
+            "correct": "B"
+        },
+        {
+            "id": 3,
+            "a": "./assets/ab/q03_a.jpg",
+            "b": "./assets/ab/q03_b.jpg",
+            "correct": "A"
+        },
+        {
+            "id": 4,
+            "a": "./assets/ab/q04_a.jpg",
+            "b": "./assets/ab/q04_b.jpg",
+            "correct": "B"
+        },
+        {
+            "id": 5,
+            "a": "./assets/ab/q05_a.jpg",
+            "b": "./assets/ab/q05_b.jpg",
+            "correct": "A"
+        },
+        {
+            "id": 6,
+            "a": "./assets/ab/q06_a.jpg",
+            "b": "./assets/ab/q06_b.jpg",
+            "correct": "B"
+        },
+        {
+            "id": 7,
+            "a": "./assets/ab/q07_a.jpg",
+            "b": "./assets/ab/q07_b.jpg",
+            "correct": "A"
+        },
+        {
+            "id": 8,
+            "a": "./assets/ab/q08_a.jpg",
+            "b": "./assets/ab/q08_b.jpg",
+            "correct": "B"
+        },
+        {
+            "id": 9,
+            "a": "./assets/ab/q09_a.jpg",
+            "b": "./assets/ab/q09_b.jpg",
+            "correct": "A"
+        },
+        {
+            "id": 10,
+            "a": "./assets/ab/q10_a.jpg",
+            "b": "./assets/ab/q10_b.jpg",
+            "correct": "B"
+        }
+    ],
+    "category4_python": {
+        "title": "Python Mini Game",
+        "instructions": [
+            "Build a small Python mini-game on your own computer.",
+            "Must include input, logic, win/lose condition, and replay option.",
+            "When ready to demo to judge, click Submit to stop the timer."
+        ]
+    }
+}
