@@ -553,9 +553,6 @@ function showScenario() {
     ul.appendChild(li);
   });
 
-  const prompts = getJson(COMP.scPrompts, []);
-  document.getElementById("scPrompt").value = prompts[idx] || "";
-
   showView("viewScenario");
   startScenarioClock();
 }
@@ -572,7 +569,6 @@ function startScenarioClock() {
 function scenarioNext() {
   const idx = Number(localStorage.getItem(COMP.scIdx) || "0");
   const prompts = getJson(COMP.scPrompts, []);
-  prompts[idx] = (document.getElementById("scPrompt").value || "").trim();
   setJson(COMP.scPrompts, prompts);
 
   localStorage.setItem(COMP.scIdx, String(idx + 1));
