@@ -741,6 +741,13 @@ function showSummaryAndSubmit() {
   const cat1 = getJson(COMP.cat1Score, { c: 0, total: 0 });
   const cat3 = getJson(COMP.cat3Score, { c: 0, total: 0 });
 
+  // total time (seconds) = sum of category times
+  const totalSec =
+    (Number(times[1]) || 0) +
+    (Number(times[2]) || 0) +
+    (Number(times[3]) || 0) +
+    (Number(times[4]) || 0);
+
   const rows = [
     {
       label: "Category 1 (Emoji)",
@@ -762,17 +769,31 @@ function showSummaryAndSubmit() {
       marks: "—",
       time: formatTime(times[4] || 0),
     },
+    { _sep: true },
+    // NEW: total time row
+    {
+      label: "Total Time Taken",
+      marks: "—",
+      time: formatTime(totalSec),
+    },
   ];
 
   const tbody = document.getElementById("sumBody");
   tbody.innerHTML = "";
   rows.forEach((r) => {
+    if (r._sep) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="3" style="height:14px; background:#fff; border-left:0; border-right:0;"></td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
     const tr = document.createElement("tr");
     tr.innerHTML = `<td class="fw-semibold">${r.label}</td><td>${r.marks}</td><td>${r.time}</td>`;
     tbody.appendChild(tr);
   });
 
-  // Submit to same Google form (extend your form fields for cat times & cat3 marks)
+  // Submit to Google form
   submitCompetitionToGoogleForm({
     name,
     cat1Correct: cat1.c,
@@ -783,6 +804,7 @@ function showSummaryAndSubmit() {
     cat3Total: cat3.total,
     cat3Time: times[3] || 0,
     cat4Time: times[4] || 0,
+    totalTime: totalSec,
     competitionVersion: compData.competitionVersion,
   }).catch(() => {});
 
