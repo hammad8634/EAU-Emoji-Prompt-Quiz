@@ -350,6 +350,11 @@ function renderQuestion() {
   $("answerInput").value = "";
   $("answerInput").focus();
 
+  $("btnSaveNext").disabled = true;
+  $("answerInput").addEventListener("input", () => {
+    $("btnSaveNext").disabled = !normalizeAnswer($("answerInput").value);
+  });
+
   $("answerCountHint").textContent = `Expected words: ${len}`;
 
   // Timer
@@ -926,7 +931,56 @@ const on = (id, event, handler) => {
   if (el) el.addEventListener(event, handler);
 };
 
+// ============================
+// Confirm Modal helper
+// ============================
+let confirmModal = null;
+let confirmCallback = null;
+
+function initConfirmModal() {
+  const el = document.getElementById("confirmModal");
+  if (!el) return;
+
+  confirmModal = new bootstrap.Modal(el);
+
+  // yes button
+  const yesBtn = document.getElementById("confirmYesBtn");
+  yesBtn.addEventListener("click", () => {
+    try {
+      if (typeof confirmCallback === "function") confirmCallback();
+    } finally {
+      confirmCallback = null;
+      confirmModal.hide();
+    }
+  });
+
+  // if user closes modal, clear callback
+  el.addEventListener("hidden.bs.modal", () => {
+    confirmCallback = null;
+  });
+}
+
+function confirmAction({ title, desc, yesText }, onYes) {
+  if (!confirmModal) {
+    // fallback (if modal missing)
+    if (window.confirm(title || "Confirm?")) onYes();
+    return;
+  }
+
+  document.getElementById("confirmTitle").textContent = title || "Confirm?";
+  document.getElementById("confirmDesc").textContent =
+    desc || "This action cannot be undone.";
+  document.getElementById("confirmYesBtn").textContent =
+    yesText || "Yes, continue";
+
+  confirmCallback = onYes;
+  confirmModal.show();
+}
+
 function wireEvents() {
+  // init confirm modal first
+  initConfirmModal();
+
   // Login
   on("loginForm", "submit", handleLoginSubmit);
 
@@ -942,42 +996,49 @@ function wireEvents() {
     showQuiz();
   });
 
-  on("btnCatResBack", "click", () => {
-    showCategories();
-  });
-
   on("btnCat1Continue", "click", () => showCategories());
   on("btnCat3Continue", "click", () => showCategories());
 
-  // Emoji quiz next
-  on("btnSaveNext", "click", handleSaveNext);
+  // =========================
+  // CONFIRMED: Cat 1 Save & Next
+  // =========================
+  on("btnSaveNext", "click", () => {
+    confirmAction(
+      {
+        title: "Save answer and move to next question?",
+        desc: "You cannot come back to edit the previous question.",
+        yesText: "Save & Next",
+      },
+      () => handleSaveNext(),
+    );
+  });
+
+  // Enter key = Save & Next (confirmed too)
+  on("answerInput", "keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      confirmAction(
+        {
+          title: "Save answer and move to next question?",
+          desc: "You cannot come back to edit the previous question.",
+          yesText: "Save & Next",
+        },
+        () => handleSaveNext(),
+      );
+    }
+  });
 
   // Logout
   on("btnLogout", "click", () => {
     stopTimer();
-    // stop other category timers too (prevents ghost intervals)
-    if (scInterval) clearInterval(scInterval);
-    scInterval = null;
-    if (abInterval) clearInterval(abInterval);
-    abInterval = null;
-    if (pyInterval) clearInterval(pyInterval);
-    pyInterval = null;
-
+    stopAllClocks();
     localStorage.clear();
     setTopUserUI("");
     showView("viewLogin");
     showAlert("Logged out.", "info");
   });
 
-  // Enter key = Save & Next (only exists in emoji view)
-  on("answerInput", "keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSaveNext();
-    }
-  });
-
-  // Legend modal (only if modal exists)
+  // Legend modal
   const legendModalEl = document.getElementById("legendModal");
   if (legendModalEl) {
     const legendModal = new bootstrap.Modal(legendModalEl);
@@ -985,46 +1046,65 @@ function wireEvents() {
     on("btnLegendInQuiz", "click", () => legendModal.show());
   }
 
-  // =========================
-  // Competition Category Buttons
-  // =========================
+  // Category buttons
   on("catBtn1", "click", () => {
     clearAttempt();
     startAttempt();
     showQuiz();
   });
 
-  on("catBtn2", "click", () => {
-    // timer is handled inside showScenario() too, but this is ok
-    showScenario();
-  });
-
-  on("catBtn3", "click", () => {
-    // IMPORTANT: this was missing before
-    showAB();
-  });
-
-  on("catBtn4", "click", () => {
-    showPython();
-  });
+  on("catBtn2", "click", () => showScenario());
+  on("catBtn3", "click", () => showAB());
+  on("catBtn4", "click", () => showPython());
 
   // =========================
-  // Category 2 (Scenario)
+  // CONFIRMED: Category 2 Next
   // =========================
-  on("btnScNext", "click", scenarioNext);
+  on("btnScNext", "click", () => {
+    confirmAction(
+      {
+        title: "Go to next scenario?",
+        desc: "No back. Make sure you read the requirements.",
+        yesText: "Next",
+      },
+      () => scenarioNext(),
+    );
+  });
 
   // =========================
   // Category 3 (A/B)
   // =========================
   on("abPickA", "click", () => chooseAB("A"));
   on("abPickB", "click", () => chooseAB("B"));
-  on("btnAbNext", "click", abNext);
+
+  // CONFIRMED: Category 3 Next
+  on("btnAbNext", "click", () => {
+    confirmAction(
+      {
+        title: `Confirm your choice (${abChosen || "-"})?`,
+        desc: "No back after submitting the answer.",
+        yesText: "Confirm & Next",
+      },
+      () => abNext(),
+    );
+  });
 
   // =========================
   // Category 4 (Python)
   // =========================
   on("btnPyStart", "click", pyStart);
-  on("btnPySubmit", "click", pySubmit);
+
+  // CONFIRMED: Category 4 Submit
+  on("btnPySubmit", "click", () => {
+    confirmAction(
+      {
+        title: "Submit and stop timer?",
+        desc: "This will finalize Category 4 time.",
+        yesText: "Submit",
+      },
+      () => pySubmit(),
+    );
+  });
 }
 
 // ============================

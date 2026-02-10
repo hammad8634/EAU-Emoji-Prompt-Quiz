@@ -821,6 +821,52 @@
           </footer>
         </div>
       </div>
+
+      <!-- CONFIRM ACTION MODAL -->
+      <div
+        class="modal fade"
+        id="confirmModal"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0 shadow-soft">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="bi bi-shield-check me-2 text-primary"></i>
+                Confirm
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+
+            <div class="modal-body">
+              <div class="fw-semibold mb-1" id="confirmTitle">
+                Are you sure?
+              </div>
+              <div class="text-muted small" id="confirmDesc">
+                This action cannot be undone.
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button
+                class="btn btn-outline-secondary"
+                data-bs-dismiss="modal"
+                type="button"
+              >
+                Cancel
+              </button>
+              <button class="btn btn-primary" id="confirmYesBtn" type="button">
+                Yes, continue
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Bootstrap JS -->
