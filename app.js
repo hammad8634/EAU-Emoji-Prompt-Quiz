@@ -506,7 +506,8 @@ function showCat3Result() {
   // UI values
   const scaled = ((correct / qs.length) * 10).toFixed(2);
 
-  document.getElementById("cat3ScoreText").textContent = `${scaled}/10`;
+  document.getElementById("cat3ScoreText").textContent =
+    `${correct}/${qs.length} (=${scaled}/10)`;
   document.getElementById("cat3TimeText").textContent = formatTime(timeSeconds);
 
   showView("viewCat3Result");
@@ -1284,6 +1285,7 @@ async function submitCompetitionToGoogleForm(payload) {
     cat3Time: "entry.1080138411",
     cat4Time: "entry.3925717",
     competitionVersion: "entry.1742727032",
+    submittedAt: "entry.1222809266",
   };
 
   const data = new URLSearchParams();
@@ -1297,6 +1299,8 @@ async function submitCompetitionToGoogleForm(payload) {
   data.append(ENTRY.cat3Time, String(payload.cat3Time));
   data.append(ENTRY.cat4Time, String(payload.cat4Time));
   data.append(ENTRY.competitionVersion, payload.competitionVersion);
+
+  data.append(ENTRY.submittedAt, new Date().toISOString());
 
   await fetch(FORM_URL, {
     method: "POST",
