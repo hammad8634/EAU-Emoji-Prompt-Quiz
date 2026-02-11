@@ -107,13 +107,45 @@
         }
     ],
     "category4_python": {
-        "title": "Python Mini Game",
-        "instructions": [
-            "Build a small Python mini-game on your own computer.",
-            "Must include input, logic, win/lose condition, and replay option.",
-            "When ready to demo to judge, click Submit to stop the timer."
+        "title": "Python Game Development Competition",
+        "brief": "Build a Heat Wave Survival Pac-Man Game (Python / Pygame). Use prompt engineering and document your prompts.",
+        "resourceUrl": "https://trinket.io/features/pygame",
+        "downloadFile": "./assets/python_starter.zip",
+        "steps": [
+            {
+                "title": "Task 1 — Build a Simple Python Maze",
+                "requirements": [
+                    "Open the starter code in Trinket and run it.",
+                    "Design simple maze walls using rectangles to block movement.",
+                    "Player must collide with maze boundaries."
+                ]
+            },
+            {
+                "title": "Task 2 — Create Game Assets (Heat Wave Theme)",
+                "requirements": [
+                    "Create cooling items (water bottle / ice cube / AC unit).",
+                    "Create hazard items (sun / fire / lava tiles).",
+                    "Use a Heat Wave theme for visuals."
+                ]
+            },
+            {
+                "title": "Task 3 — Add Scoring & Game Logic",
+                "requirements": [
+                    "Score increases when collecting cooling items.",
+                    "Hazards reduce health or cause game over.",
+                    "Win condition: all cooling items collected."
+                ]
+            },
+            {
+                "title": "Task 4 (Optional) — Bonus Challenge",
+                "requirements": [
+                    "Make hazards move continuously and randomly within the maze."
+                ]
+            }
         ],
-        "resourceUrl": "https://www.online-python.com/",
-        "downloadFile": "./assets/Initial_Code 1.py"
+        "submission": [
+            "A fully functional Python game file (.py)",
+            "A documented set of prompts used during development"
+        ]
     }
 }

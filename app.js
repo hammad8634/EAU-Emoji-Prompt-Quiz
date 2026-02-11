@@ -26,6 +26,7 @@ const COMP = {
   scIdx: "eauComp.scIdx",
   scPrompts: "eauComp.scPrompts",
 
+  pyIdx: "eauComp.pyIdx",
   abIdx: "eauComp.abIdx",
   abPicks: "eauComp.abPicks",
   completed: "eauComp.completed",
@@ -645,6 +646,7 @@ function showAB() {
 
     // Unlock Category 4
     setUnlocked(4);
+    localStorage.setItem(COMP.pyIdx, "0");
 
     // Show Category 3 detailed results FIRST
     showCat3Result();
@@ -702,43 +704,92 @@ let pyInterval = null;
 function showPython() {
   showView("viewPython");
 
-  document.getElementById("pyTitle").textContent =
-    compData.category4_python.title;
+  // Start Category 4 timer ONCE (same logic as Category 2/3)
+  if (!localStorage.getItem(COMP.catStart)) startCategoryTimer();
+
+  // init step index if missing
+  if (!localStorage.getItem(COMP.pyIdx)) localStorage.setItem(COMP.pyIdx, "0");
+
+  const cfg = compData.category4_python || {};
+  const steps = cfg.steps || [];
+  const idx = Number(localStorage.getItem(COMP.pyIdx) || "0");
+
+  // if finished steps -> show submit button
+  const isLast = idx >= steps.length - 1;
+
+  // Header
+  document.getElementById("pyTitle").textContent = cfg.title || "Category 4";
+  document.getElementById("pyStepNum").textContent = String(
+    Math.min(idx + 1, steps.length || 1),
+  );
+  document.getElementById("pyStepTotal").textContent = String(
+    steps.length || 1,
+  );
+
+  // Step content
+  const step = steps[idx] || { title: "Final", requirements: [] };
+
+  document.getElementById("pyStepTitle").textContent =
+    step.title || cfg.brief || "Instructions";
 
   const ul = document.getElementById("pyInstr");
   ul.innerHTML = "";
-  (compData.category4_python.instructions || []).forEach((x) => {
+
+  // Brief (once at top)
+  if (cfg.brief) {
+    const li = document.createElement("li");
+    li.innerHTML = `<strong>Brief:</strong> ${escapeHtml(cfg.brief)}`;
+    ul.appendChild(li);
+  }
+
+  // URL + download ONLY on Step 1
+  if (idx === 0 && cfg.resourceUrl) {
+    const li = document.createElement("li");
+    li.innerHTML = `Open online compiler: <a href="${cfg.resourceUrl}" target="_blank">${escapeHtml(cfg.resourceUrl)}</a>`;
+    ul.appendChild(li);
+  }
+  if (idx === 0 && cfg.downloadFile) {
+    const li = document.createElement("li");
+    li.innerHTML = `<a href="${cfg.downloadFile}" download>Download Starter File</a>`;
+    ul.appendChild(li);
+  }
+
+  // Requirements for this step
+  (step.requirements || []).forEach((x) => {
     const li = document.createElement("li");
     li.textContent = x;
     ul.appendChild(li);
   });
 
-  // 🔗 Optional Resource URL
-  if (compData.category4_python.resourceUrl) {
-    const li = document.createElement("li");
-    li.innerHTML = `
-    Practice environment:
-    <a href="${compData.category4_python.resourceUrl}" target="_blank">
-      Open Online Python
-    </a>
-  `;
-    ul.appendChild(li);
+  // If last step, show submission requirements too
+  if (isLast && (cfg.submission || []).length) {
+    const liSep = document.createElement("li");
+    liSep.innerHTML = `<strong>Submission Requirements:</strong>`;
+    ul.appendChild(liSep);
+
+    (cfg.submission || []).forEach((x) => {
+      const li = document.createElement("li");
+      li.textContent = x;
+      ul.appendChild(li);
+    });
   }
 
-  // 🐍 Optional Download File
-  if (compData.category4_python.downloadFile) {
-    const li = document.createElement("li");
-    li.innerHTML = `
-    <a href="${compData.category4_python.downloadFile}" download>
-      Download Python Template File
-    </a>
-  `;
-    ul.appendChild(li);
-  }
+  // Buttons
+  document.getElementById("btnPyNext").classList.toggle("d-none", isLast);
+  document.getElementById("btnPySubmit").classList.toggle("d-none", !isLast);
 
-  document.getElementById("btnPyStart").classList.remove("d-none");
-  document.getElementById("btnPySubmit").classList.add("d-none");
-  document.getElementById("pyTimer").textContent = "00:00";
+  // Start timer UI clock
+  startPyClock();
+}
+
+function pyNext() {
+  const cfg = compData.category4_python || {};
+  const steps = cfg.steps || [];
+  const idx = Number(localStorage.getItem(COMP.pyIdx) || "0");
+
+  // move next
+  localStorage.setItem(COMP.pyIdx, String(idx + 1));
+  showPython();
 }
 
 function pyStart() {
@@ -1115,9 +1166,17 @@ function wireEvents() {
   // =========================
   // Category 4 (Python)
   // =========================
-  on("btnPyStart", "click", pyStart);
+  on("btnPyNext", "click", () => {
+    confirmAction(
+      {
+        title: "Go to next step?",
+        desc: "No back. Make sure you read the requirements.",
+        yesText: "Next",
+      },
+      () => pyNext(),
+    );
+  });
 
-  // CONFIRMED: Category 4 Submit
   on("btnPySubmit", "click", () => {
     confirmAction(
       {

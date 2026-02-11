@@ -508,6 +508,11 @@
                     >Category 4</span
                   >
                   <h2 class="h4 mt-3 mb-1" id="pyTitle"></h2>
+                  <div class="text-muted small mt-1">
+                    <strong>Step :</strong> <span id="pyStepNum"></span>/<span
+                      id="pyStepTotal"
+                    ></span>
+                  </div>
                   <div class="text-muted small">
                     Click Start to begin timer. Click Submit when ready for
                     judge.
@@ -520,18 +525,19 @@
               </div>
 
               <div class="mt-4 bg-panel rounded-4 p-3 border">
-                <div class="fw-semibold mb-2">Instructions</div>
+                <div class="fw-bold mb-2" id="pyStepTitle"></div>
                 <ul class="text-muted mb-0" id="pyInstr"></ul>
               </div>
 
               <div class="d-flex gap-2 mt-4">
                 <button
-                  id="btnPyStart"
+                  id="btnPyNext"
                   class="btn btn-primary btn-lg"
                   type="button"
                 >
-                  <i class="bi bi-play-fill me-2"></i>Start
+                  <i class="bi bi-arrow-right-circle me-2"></i>Next
                 </button>
+
                 <button
                   id="btnPySubmit"
                   class="btn btn-primary btn-lg d-none"
@@ -539,6 +545,10 @@
                 >
                   <i class="bi bi-check2-circle me-2"></i>Submit (Stop Timer)
                 </button>
+
+                <div class="ms-auto text-muted small">
+                  <i class="bi bi-lock me-1"></i>No back
+                </div>
               </div>
             </div>
           </section>
