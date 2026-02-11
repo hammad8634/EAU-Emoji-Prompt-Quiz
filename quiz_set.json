@@ -4,38 +4,118 @@
         {
             "id": 1,
             "emojis": [
-                "🤝",
-                "❤️",
-                "😊"
+                "📉",
+                "➡️",
+                "📊",
+                "➡️",
+                "📈"
             ],
-            "answer": "handshake heart smile"
+            "answer": "analyze setbacks to achieve growth"
         },
         {
             "id": 2,
             "emojis": [
                 "🧠",
-                "📌",
-                "⭐"
+                "🔒",
+                "➡️",
+                "🔑",
+                "➡️",
+                "💡"
             ],
-            "answer": "brain pin star"
+            "answer": "unlock critical thinking to generate innovation"
         },
         {
             "id": 3,
             "emojis": [
-                "🤝",
-                "❤️",
-                "😊"
+                "👣",
+                "➡️",
+                "📚",
+                "➡️",
+                "🏔️"
             ],
-            "answer": "handshake heart smile"
+            "answer": "consistent study leads to academic excellence"
         },
         {
             "id": 4,
             "emojis": [
-                "🧠",
-                "📌",
-                "⭐"
+                "🌙",
+                "📚",
+                "☕",
+                "➡️",
+                "🏆"
             ],
-            "answer": "brain pin star"
+            "answer": "dedicated late-night effort earns achievement"
+        },
+        {
+            "id": 5,
+            "emojis": [
+                "🌱",
+                "🌧️",
+                "☀️",
+                "➡️",
+                "🌳"
+            ],
+            "answer": "resilience through challenges builds strength"
+        },
+        {
+            "id": 6,
+            "emojis": [
+                "🕒",
+                "📖",
+                "➡️",
+                "🧠",
+                "➡️",
+                "🎓"
+            ],
+            "answer": "time invested in learning builds expertise"
+        },
+        {
+            "id": 7,
+            "emojis": [
+                "🚧",
+                "➡️",
+                "🧩",
+                "➡️",
+                "🏁"
+            ],
+            "answer": "problem-solving overcomes academic obstacles"
+        },
+        {
+            "id": 8,
+            "emojis": [
+                "❤️",
+                "➡️",
+                "🔥",
+                "➡️",
+                "📚",
+                "➡️",
+                "🎓"
+            ],
+            "answer": "passion fuels sustained academic success"
+        },
+        {
+            "id": 9,
+            "emojis": [
+                "❓",
+                "➡️",
+                "🔍",
+                "➡️",
+                "🪜",
+                "➡️",
+                "✅"
+            ],
+            "answer": "inquiry and investigation lead to clarity"
+        },
+        {
+            "id": 10,
+            "emojis": [
+                "🐛",
+                "➡️",
+                "📚",
+                "➡️",
+                "🦋"
+            ],
+            "answer": "intellectual struggle leads to transformation"
         }
     ]
 }

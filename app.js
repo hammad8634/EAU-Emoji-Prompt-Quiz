@@ -3,6 +3,13 @@
 // ============================
 const QUIZ_PLAN = [];
 
+const CAT_LIMITS_SEC = {
+  1: 11 * 60, // Cat1 11 min
+  2: 20 * 60, // Cat2 20 min
+  3: 5 * 60, // Cat3 5 min
+  4: 25 * 66, // Cat4 25 min
+};
+
 // Target time for time-score normalization (seconds)
 const TARGET_TIME_SECONDS = 240; // e.g., 4 minutes
 
@@ -30,12 +37,23 @@ const COMP = {
   abIdx: "eauComp.abIdx",
   abPicks: "eauComp.abPicks",
   completed: "eauComp.completed",
+
+  catDeadline: "eauComp.catDeadlineMs", // {1:ms,2:ms,3:ms,4:ms}
 };
 
 // ============================
 // DOM helpers
 // ============================
 const $ = (id) => document.getElementById(id);
+
+function showTimeUp(catNum) {
+  const msg =
+    catNum === 4
+      ? `⏳ Time's up for Category 4. Your submission has been auto-finalized.`
+      : `⏳ Time's up for Category ${catNum}. Your progress was auto-saved and you are moved to the next category.`;
+
+  showAlert(msg, "warning");
+}
 
 function showAlert(message, type = "info") {
   const el = $("globalAlert");
@@ -53,7 +71,6 @@ function hideAlert() {
 function showView(viewId) {
   const views = [
     "viewLogin",
-    "viewWelcome",
     "viewCategories",
     "viewQuiz",
     "viewScenario",
@@ -248,6 +265,38 @@ function isFinished() {
   return localStorage.getItem(LS.finished) === "1";
 }
 
+function startCategoryWithLimit(catNum) {
+  const deadlines = getJson(COMP.catDeadline, {});
+  if (!deadlines[catNum]) {
+    deadlines[catNum] = Date.now() + (CAT_LIMITS_SEC[catNum] || 0) * 1000;
+    setJson(COMP.catDeadline, deadlines);
+  }
+  startCategoryTimer(); // you already have this
+}
+
+function getRemainingSec(catNum) {
+  const deadlines = getJson(COMP.catDeadline, {});
+  const end = Number(deadlines[catNum] || 0);
+  if (!end) return CAT_LIMITS_SEC[catNum] || 0;
+  return Math.max(0, Math.floor((end - Date.now()) / 1000));
+}
+
+function forceFinishCategory(catNum) {
+  stopCategoryTimer(catNum);
+  const deadlines = getJson(COMP.catDeadline, {});
+  delete deadlines[catNum];
+  setJson(COMP.catDeadline, deadlines);
+
+  if (catNum >= 4) {
+    showSummaryAndSubmit();
+    return;
+  }
+
+  const next = catNum + 1;
+  setUnlocked(next);
+  showCategories();
+}
+
 // ============================
 // Views: Login
 // ============================
@@ -283,26 +332,49 @@ function handleLoginSubmit(e) {
   showCategories();
 }
 
-// function showWelcome() {
-//   const username = getUser();
-//   $("welcomeName").textContent = username || "Student";
-
-//   setTopUserUI(username);
-
-//   showView("viewWelcome");
-// }
-
 // ============================
 // Views: Quiz
 // ============================
 function startTimer() {
   stopTimer();
   timerInterval = setInterval(() => {
-    const startMs = getStartMs();
-    if (!startMs) return;
-    const elapsed = Math.floor((Date.now() - startMs) / 1000);
-    $("timerText").textContent = formatTime(elapsed);
+    const remain = getRemainingSec(1);
+    $("timerText").textContent = formatTime(remain);
+
+    if (remain <= 0) {
+      stopTimer();
+      // autosave already done per question (answers array)
+      // force finish -> unlock cat2 and go categories
+      finalizeCat1TimeUp();
+    }
   }, 250);
+}
+
+function finalizeCat1TimeUp() {
+  // save Cat1 time based on limit timer
+  stopCategoryTimer(1);
+
+  // compute Cat1 marks
+  const { correct, total: tot } = computeScores();
+
+  // store Cat1 score
+  localStorage.setItem(
+    COMP.cat1Score,
+    JSON.stringify({ c: correct, total: tot }),
+  );
+
+  clearInterval(timerInterval);
+
+  // unlock Cat2 + reset Cat2 state
+  setUnlocked(2);
+  localStorage.setItem(COMP.scIdx, "0");
+  setJson(COMP.scPrompts, []);
+
+  // clear catStart for next category
+  localStorage.removeItem(COMP.catStart);
+
+  showTimeUp(1);
+  showCat1Result(); // ✅ go to Cat1 Results screen
 }
 
 function stopTimer() {
@@ -368,6 +440,7 @@ function showQuiz() {
   if (!getStartMs() || isFinished()) {
     startAttempt();
   }
+  startCategoryWithLimit(1);
 
   showView("viewQuiz");
   renderQuestion();
@@ -515,7 +588,7 @@ function showCat3Result() {
 
 function showScenario() {
   // Start Category 2 timer ONCE
-  if (!localStorage.getItem(COMP.catStart)) startCategoryTimer();
+  if (!localStorage.getItem(COMP.catStart)) startCategoryWithLimit(2);
 
   const idx = Number(localStorage.getItem(COMP.scIdx) || "0");
   const items = compData.category2_scenarios || [];
@@ -563,9 +636,16 @@ function showScenario() {
 function startScenarioClock() {
   if (scInterval) clearInterval(scInterval);
   scInterval = setInterval(() => {
-    const start = Number(localStorage.getItem(COMP.catStart) || "0");
-    const sec = start ? Math.floor((Date.now() - start) / 1000) : 0;
-    document.getElementById("scTimer").textContent = formatTime(sec);
+    const remain = getRemainingSec(2);
+    document.getElementById("scTimer").textContent = formatTime(remain);
+
+    if (remain <= 0) {
+      clearInterval(scInterval);
+      scInterval = null;
+
+      // prompts already saved (scPrompts), index saved (scIdx)
+      forceFinishCategory(2);
+    }
   }, 250);
 }
 
@@ -608,7 +688,7 @@ function saveCategoryElapsed(catNum) {
 
 function showAB() {
   // Start Category 3 timer ONCE
-  if (!localStorage.getItem(COMP.catStart)) startCategoryTimer();
+  if (!localStorage.getItem(COMP.catStart)) startCategoryWithLimit(3);
 
   const idx = Number(localStorage.getItem(COMP.abIdx) || "0");
   const qs = compData.category3_ab || [];
@@ -673,10 +753,51 @@ function showAB() {
 function startABClock() {
   if (abInterval) clearInterval(abInterval);
   abInterval = setInterval(() => {
-    const start = Number(localStorage.getItem(COMP.catStart) || "0");
-    const sec = start ? Math.floor((Date.now() - start) / 1000) : 0;
-    document.getElementById("abTimer").textContent = formatTime(sec);
+    const remain = getRemainingSec(3);
+    document.getElementById("abTimer").textContent = formatTime(remain);
+
+    if (remain <= 0) {
+      clearInterval(abInterval);
+      abInterval = null;
+
+      // just force finish category
+      finalizeCat3TimeUp();
+    }
   }, 250);
+}
+
+function finalizeCat3TimeUp() {
+  // save Cat3 time
+  stopCategoryTimer(3);
+
+  const qs = compData.category3_ab || [];
+  const picks = getJson(COMP.abPicks, []);
+
+  // compute marks
+  let correct = 0;
+  for (let i = 0; i < qs.length; i++) {
+    if ((picks[i] || "") === (qs[i].correct || "")) correct++;
+  }
+
+  // store Cat3 score
+  localStorage.setItem(
+    COMP.cat3Score,
+    JSON.stringify({
+      c: correct,
+      total: qs.length,
+      scaled: qs.length ? (correct / qs.length) * 10 : 0,
+    }),
+  );
+
+  // unlock Cat4
+  setUnlocked(4);
+  localStorage.setItem(COMP.pyIdx, "0");
+
+  // clear catStart for next category
+  localStorage.removeItem(COMP.catStart);
+
+  showTimeUp(3);
+  showCat3Result(); // ✅ go to Cat3 Results screen
 }
 
 function chooseAB(letter) {
@@ -706,7 +827,7 @@ function showPython() {
   showView("viewPython");
 
   // Start Category 4 timer ONCE (same logic as Category 2/3)
-  if (!localStorage.getItem(COMP.catStart)) startCategoryTimer();
+  if (!localStorage.getItem(COMP.catStart)) startCategoryWithLimit(4);
 
   // init step index if missing
   if (!localStorage.getItem(COMP.pyIdx)) localStorage.setItem(COMP.pyIdx, "0");
@@ -803,9 +924,18 @@ function pyStart() {
 function startPyClock() {
   if (pyInterval) clearInterval(pyInterval);
   pyInterval = setInterval(() => {
-    const start = Number(localStorage.getItem(COMP.catStart) || "0");
-    const sec = start ? Math.floor((Date.now() - start) / 1000) : 0;
-    document.getElementById("pyTimer").textContent = formatTime(sec);
+    const remain = getRemainingSec(4);
+    document.getElementById("pyTimer").textContent = formatTime(remain);
+
+    if (remain <= 0) {
+      clearInterval(pyInterval);
+      pyInterval = null;
+
+      showTimeUp(4);
+      // finalize time and show summary (auto submit)
+      stopCategoryTimer(4);
+      showSummaryAndSubmit();
+    }
   }, 250);
 }
 
