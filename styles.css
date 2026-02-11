@@ -30,6 +30,27 @@
   background: linear-gradient(90deg, var(--eau-maroon-dark), var(--eau-maroon));
 }
 
+.watermark {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.1;
+  font-weight: 800;
+  font-size: 28px;
+  color: #7a0026;
+  transform: rotate(-22deg);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  white-space: pre;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 300px;
+}
+
 .text-ink {
   color: var(--ink) !important;
 }

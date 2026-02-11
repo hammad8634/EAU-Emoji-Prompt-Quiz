@@ -269,6 +269,7 @@ function handleLoginSubmit(e) {
   }
 
   setUser(username);
+  setWatermark();
 
   // If user already has an unfinished attempt, resume
   const storedVersion = localStorage.getItem(LS.quizVersion);
@@ -996,6 +997,47 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
+function setWatermark() {
+  const u = getUser() || "Participant";
+  const wm = document.getElementById("wm");
+  if (!wm) return;
+
+  wm.textContent = `EAU • ${u} • ${new Date().toLocaleString()}`;
+  wm.classList.remove("d-none");
+
+  // refresh timestamp every 10s
+  setInterval(() => {
+    wm.textContent = `EAU • ${u} • ${new Date().toLocaleString()}`;
+  }, 10000);
+}
+
+function lockCopyPaste() {
+  // disable right click
+  document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  // disable common copy/paste/cut/select-all + print/save
+  document.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      ["c", "v", "x", "a", "p", "s", "u"].includes(k)
+    ) {
+      e.preventDefault();
+    }
+    // F12 / Devtools shortcuts (not perfect)
+    if (e.key === "F12") e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && ["i", "j", "c"].includes(k))
+      e.preventDefault();
+  });
+
+  // disable copying selected text
+  document.addEventListener("copy", (e) => e.preventDefault());
+  document.addEventListener("cut", (e) => e.preventDefault());
+
+  // disable paste into input (optional)
+  document.addEventListener("paste", (e) => e.preventDefault());
+}
+
 // ============================
 // Events
 // ============================
@@ -1272,9 +1314,12 @@ async function submitCompetitionToGoogleForm(payload) {
   try {
     await loadData();
     wireEvents();
+    lockCopyPaste();
 
     const username = getUser();
     setTopUserUI(username);
+
+    if (username) setWatermark();
 
     // Resume logic
     const hasUser = !!username;
