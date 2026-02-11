@@ -499,19 +499,14 @@ function showCat3Result() {
     tbody.appendChild(tr);
   }
 
-  // Save score
-  localStorage.setItem(
-    COMP.cat3Score,
-    JSON.stringify({ c: correct, total: qs.length }),
-  );
-
   // Read stored time for Category 3
   const times = getJson(COMP.catTimes, {});
   const timeSeconds = times[3] || 0;
 
   // UI values
-  document.getElementById("cat3ScoreText").textContent =
-    `${correct}/${qs.length}`;
+  const scaled = ((correct / qs.length) * 10).toFixed(2);
+
+  document.getElementById("cat3ScoreText").textContent = `${scaled}/10`;
   document.getElementById("cat3TimeText").textContent = formatTime(timeSeconds);
 
   showView("viewCat3Result");
@@ -642,7 +637,11 @@ function showAB() {
 
     localStorage.setItem(
       COMP.cat3Score,
-      JSON.stringify({ c: correct, total: qs.length }),
+      JSON.stringify({
+        c: correct,
+        total: qs.length,
+        scaled: (correct / qs.length) * 10,
+      }),
     );
 
     // Unlock Category 4
@@ -841,7 +840,7 @@ function showSummaryAndSubmit() {
     },
     {
       label: "Category 3 (Which is AI?)",
-      marks: `${cat3.c}/${cat3.total}`,
+      marks: `${cat3.c}/${cat3.total} (=${(cat3.scaled || 0).toFixed(2)}/10)`,
       time: formatTime(times[3] || 0),
     },
     {
