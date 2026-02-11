@@ -149,12 +149,12 @@
 
               <form id="loginForm" class="row g-3">
                 <div class="col-12 col-md-6">
-                  <label class="form-label">Username</label>
+                  <label class="form-label"><strong>Username</strong></label>
                   <input
                     id="loginUsername"
                     type="text"
                     class="form-control form-control-lg"
-                    placeholder="e.g., Hammad"
+                    placeholder="e.g., User"
                     autocomplete="username"
                     required
                   />
@@ -164,12 +164,12 @@
                 </div>
 
                 <div class="col-12 col-md-6">
-                  <label class="form-label">Password</label>
+                  <label class="form-label"><strong>Password</strong></label>
                   <input
                     id="loginPassword"
                     type="password"
                     class="form-control form-control-lg"
-                    placeholder="e.g., HammadEAU2026"
+                    placeholder="e.g., UserEAU2026"
                     autocomplete="current-password"
                     required
                   />
@@ -184,14 +184,14 @@
                   <button class="btn btn-primary btn-lg" type="submit">
                     <i class="bi bi-box-arrow-in-right me-2"></i>Login
                   </button>
-                  <button
+                  <!-- <button
                     id="btnDemoFill"
                     class="btn btn-outline-secondary btn-lg"
                     type="button"
                     title="Fill a sample username/password"
                   >
                     <i class="bi bi-magic me-2"></i>Demo Fill
-                  </button>
+                  </button> -->
 
                   <!-- <span class="ms-auto text-muted small">
                     <i class="bi bi-shield-check me-1"></i>
@@ -199,81 +199,6 @@
                   </span> -->
                 </div>
               </form>
-            </div>
-          </section>
-
-          <!-- WELCOME VIEW -->
-          <section id="viewWelcome" class="card border-0 shadow-soft d-none">
-            <div class="card-body p-4 p-md-5">
-              <div
-                class="d-flex align-items-start justify-content-between gap-3"
-              >
-                <div>
-                  <h2 class="h3 mb-2">
-                    Welcome,
-                    <span id="welcomeName" class="text-primary"></span> 👋
-                  </h2>
-                  <p class="text-muted mb-0">
-                    You will answer <strong>12 questions</strong>. Each question
-                    shows a sequence of emojis. Type the matching words in the
-                    <strong>same order</strong>.
-                  </p>
-                </div>
-                <div class="icon-splash icon-splash--alt">
-                  <i class="bi bi-stopwatch"></i>
-                </div>
-              </div>
-
-              <div class="row g-3 mt-3">
-                <div class="col-12 col-md-6">
-                  <div class="p-3 rounded-4 bg-panel border">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                      <i class="bi bi-list-check text-primary"></i>
-                      <div class="fw-semibold">Quiz Plan</div>
-                    </div>
-                    <ul class="mb-0 text-muted small" id="planList"></ul>
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-6">
-                  <div class="p-3 rounded-4 bg-panel border">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                      <i class="bi bi-trophy text-primary"></i>
-                      <div class="fw-semibold">Scoring</div>
-                    </div>
-                    <ul class="mb-0 text-muted small">
-                      <li>1 mark per correct answer (max 12)</li>
-                      <li>
-                        Final score = <strong>50% Accuracy</strong> +
-                        <strong>50% Time</strong>
-                      </li>
-                      <li>Faster completion improves time score</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div class="d-flex flex-wrap gap-2 align-items-center mt-4">
-                <button
-                  id="btnStart"
-                  class="btn btn-primary btn-lg"
-                  type="button"
-                >
-                  <i class="bi bi-play-fill me-2"></i>Start Quiz
-                </button>
-                <button
-                  id="btnShowLegend"
-                  class="btn btn-outline-secondary btn-lg"
-                  type="button"
-                >
-                  <i class="bi bi-book me-2"></i>Emoji Legend
-                </button>
-
-                <span class="ms-auto text-muted small">
-                  <i class="bi bi-exclamation-circle me-1"></i>
-                  No back button — answer carefully.
-                </span>
-              </div>
             </div>
           </section>
 
@@ -341,17 +266,15 @@
                 <input
                   id="answerInput"
                   class="form-control form-control-lg"
-                  placeholder="e.g., handshake heart smile ..."
+                  placeholder="e.g., Analyze setbacks ..."
                   maxlength="200"
                 />
                 <div
                   class="d-flex justify-content-between mt-2 small text-muted"
                 >
                   <div>
-                    Tip: use single spaces between words. Case doesn't matter.
-                  </div>
-                  <div>
-                    <span id="answerCountHint"></span>
+                    <strong>Tip:</strong> use single spaces between words. Case
+                    doesn't matter.
                   </div>
                 </div>
               </div>
@@ -363,13 +286,6 @@
                   type="button"
                 >
                   <i class="bi bi-check2-circle me-2"></i>Save & Next
-                </button>
-                <button
-                  id="btnLegendInQuiz"
-                  class="btn btn-outline-secondary btn-lg"
-                  type="button"
-                >
-                  <i class="bi bi-book me-2"></i>Legend
                 </button>
 
                 <span class="ms-auto text-muted small">
@@ -774,58 +690,6 @@
               </div>
             </div>
           </section>
-
-          <!-- LEGEND MODAL -->
-          <div
-            class="modal fade"
-            id="legendModal"
-            tabindex="-1"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-              <div class="modal-content border-0 shadow-soft">
-                <div class="modal-header">
-                  <h5 class="modal-title">
-                    <i class="bi bi-book me-2 text-primary"></i>Emoji Legend
-                  </h5>
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                  ></button>
-                </div>
-
-                <div class="modal-body">
-                  <p class="text-muted mb-3">
-                    This legend shows the emoji → word mapping used in the quiz.
-                  </p>
-
-                  <div class="table-responsive">
-                    <table class="table table-bordered align-middle mb-0">
-                      <thead class="table-light">
-                        <tr>
-                          <th style="width: 80px">Emoji</th>
-                          <th style="width: 200px">Word</th>
-                          <th>Meaning</th>
-                        </tr>
-                      </thead>
-                      <tbody id="legendTableBody"></tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div class="modal-footer">
-                  <button
-                    class="btn btn-primary"
-                    data-bs-dismiss="modal"
-                    type="button"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <footer class="text-center text-muted small mt-4">
             Application for Prompt Engineering practice • EAU •

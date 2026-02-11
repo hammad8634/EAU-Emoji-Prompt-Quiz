@@ -120,7 +120,6 @@ function setTopUserUI(username) {
 // ============================
 // App state
 // ============================
-let emojiBank = [];
 let quiz = { quizVersion: "", questions: [] };
 let compData = null; // competition.json
 
@@ -130,42 +129,18 @@ let timerInterval = null;
 // Load JSON
 // ============================
 async function loadData() {
-  const [bankRes, quizRes, compRes] = await Promise.all([
-    fetch("./emoji_bank.json", { cache: "no-store" }),
+  const [quizRes, compRes] = await Promise.all([
     fetch("./quiz_set.json", { cache: "no-store" }),
     fetch("./competition.json", { cache: "no-store" }),
   ]);
   if (!compRes.ok) throw new Error("Failed to load competition.json");
-  if (!bankRes.ok) throw new Error("Failed to load emoji_bank.json");
   if (!quizRes.ok) throw new Error("Failed to load quiz_set.json");
 
-  emojiBank = await bankRes.json();
   quiz = await quizRes.json();
   compData = await compRes.json();
 
   // Footer version
   $("quizVersionFooter").textContent = `Quiz: ${quiz.quizVersion}`;
-
-  // Build legend table
-  renderLegend();
-}
-
-// ============================
-// Legend + Plan UI
-// ============================
-function renderLegend() {
-  const tbody = $("legendTableBody");
-  tbody.innerHTML = "";
-
-  for (const item of emojiBank) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="text-center fs-4">${item.emoji}</td>
-      <td><span class="badge text-bg-light border text-ink">${item.word}</span></td>
-      <td class="text-muted">${item.meaning || ""}</td>
-    `;
-    tbody.appendChild(tr);
-  }
 }
 
 // ============================
@@ -429,8 +404,6 @@ function renderQuestion() {
     $("btnSaveNext").disabled = !normalizeAnswer($("answerInput").value);
   });
 
-  $("answerCountHint").textContent = `Expected words: ${len}`;
-
   // Timer
   startTimer();
 }
@@ -580,7 +553,7 @@ function showCat3Result() {
   const scaled = ((correct / qs.length) * 10).toFixed(2);
 
   document.getElementById("cat3ScoreText").textContent =
-    `${correct}/${qs.length} (=${scaled}/10)`;
+    `${correct}/${qs.length} ( = ${scaled}/10)`;
   document.getElementById("cat3TimeText").textContent = formatTime(timeSeconds);
 
   showView("viewCat3Result");
@@ -971,7 +944,7 @@ function showSummaryAndSubmit() {
     },
     {
       label: "Category 3 (Which is AI?)",
-      marks: `${cat3.c}/${cat3.total} (=${(cat3.scaled || 0).toFixed(2)}/10)`,
+      marks: `${cat3.c}/${cat3.total} ( = ${(cat3.scaled || 0).toFixed(2)}/10)`,
       time: formatTime(times[3] || 0),
     },
     {
@@ -1230,17 +1203,10 @@ function wireEvents() {
   // Login
   on("loginForm", "submit", handleLoginSubmit);
 
-  on("btnDemoFill", "click", () => {
-    $("loginUsername").value = "Hammad";
-    $("loginPassword").value = "HammadEAU2026";
-  });
-
-  // Category 1 start (Emoji)
-  on("btnStart", "click", () => {
-    clearAttempt();
-    startAttempt();
-    showQuiz();
-  });
+  // on("btnDemoFill", "click", () => {
+  //   $("loginUsername").value = "User";
+  //   $("loginPassword").value = "UserEAU2026";
+  // });
 
   on("btnCat1Continue", "click", () => showCategories());
   on("btnCat3Continue", "click", () => showCategories());
@@ -1283,14 +1249,6 @@ function wireEvents() {
     showView("viewLogin");
     showAlert("Logged out.", "info");
   });
-
-  // Legend modal
-  const legendModalEl = document.getElementById("legendModal");
-  if (legendModalEl) {
-    const legendModal = new bootstrap.Modal(legendModalEl);
-    on("btnShowLegend", "click", () => legendModal.show());
-    on("btnLegendInQuiz", "click", () => legendModal.show());
-  }
 
   // Category buttons
   on("catBtn1", "click", () => {
