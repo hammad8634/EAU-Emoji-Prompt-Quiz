@@ -112,6 +112,8 @@
             "Build a small Python mini-game on your own computer.",
             "Must include input, logic, win/lose condition, and replay option.",
             "When ready to demo to judge, click Submit to stop the timer."
-        ]
+        ],
+        "resourceUrl": "https://www.online-python.com/",
+        "downloadFile": "./assets/Initial_Code 1.py"
     }
 }

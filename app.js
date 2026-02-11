@@ -713,6 +713,29 @@ function showPython() {
     ul.appendChild(li);
   });
 
+  // 🔗 Optional Resource URL
+  if (compData.category4_python.resourceUrl) {
+    const li = document.createElement("li");
+    li.innerHTML = `
+    Practice environment:
+    <a href="${compData.category4_python.resourceUrl}" target="_blank">
+      Open Online Python
+    </a>
+  `;
+    ul.appendChild(li);
+  }
+
+  // 🐍 Optional Download File
+  if (compData.category4_python.downloadFile) {
+    const li = document.createElement("li");
+    li.innerHTML = `
+    <a href="${compData.category4_python.downloadFile}" download>
+      Download Python Template File
+    </a>
+  `;
+    ul.appendChild(li);
+  }
+
   document.getElementById("btnPyStart").classList.remove("d-none");
   document.getElementById("btnPySubmit").classList.add("d-none");
   document.getElementById("pyTimer").textContent = "00:00";
