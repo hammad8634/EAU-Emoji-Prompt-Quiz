@@ -7,9 +7,12 @@ const CAT_LIMITS_SEC = {
   1: 11 * 60, // Cat1 11 min
   2: 20 * 60, // Cat2 20 min
   3: 5 * 60, // Cat3 5 min
-  4: 37 * 66, // Cat4 25 min
+  4: 25 * 66, // Cat4 25 min
 };
 
+const CAT_GRACE_SEC = {
+  4: 10 * 60, // ✅ give +10 minutes to Cat4 (change as you want)
+};
 // Target time for time-score normalization (seconds)
 const TARGET_TIME_SECONDS = 240; // e.g., 4 minutes
 
@@ -249,11 +252,23 @@ function startCategoryWithLimit(catNum) {
   startCategoryTimer(); // you already have this
 }
 
+// function getRemainingSec(catNum) {
+//   const deadlines = getJson(COMP.catDeadline, {});
+//   const end = Number(deadlines[catNum] || 0);
+//   if (!end) return CAT_LIMITS_SEC[catNum] || 0;
+//   return Math.max(0, Math.floor((end - Date.now()) / 1000));
+// }
+
 function getRemainingSec(catNum) {
   const deadlines = getJson(COMP.catDeadline, {});
   const end = Number(deadlines[catNum] || 0);
-  if (!end) return CAT_LIMITS_SEC[catNum] || 0;
-  return Math.max(0, Math.floor((end - Date.now()) / 1000));
+
+  const base = end
+    ? Math.max(0, Math.floor((end - Date.now()) / 1000))
+    : CAT_LIMITS_SEC[catNum] || 0;
+
+  const grace = CAT_GRACE_SEC[catNum] || 0;
+  return base + grace;
 }
 
 function forceFinishCategory(catNum) {
