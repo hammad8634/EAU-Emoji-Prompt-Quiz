@@ -110,7 +110,7 @@
         "title": "Python Game Development Competition",
         "brief": "Build a Heat Wave Survival Pac-Man Game (Python / Pygame). Use prompt engineering and document your prompts.",
         "resourceUrl": "https://trinket.io/features/pygame",
-        "downloadFile": "./assets/python_starter.zip",
+        "downloadFile": "./assets/Initial_Code 1.py",
         "steps": [
             {
                 "title": "Task 1 — Build a Simple Python Maze",
