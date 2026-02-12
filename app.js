@@ -7,7 +7,7 @@ const CAT_LIMITS_SEC = {
   1: 11 * 60, // Cat1 11 min
   2: 20 * 60, // Cat2 20 min
   3: 5 * 60, // Cat3 5 min
-  4: 35 * 66, // Cat4 25 min
+  4: 37 * 66, // Cat4 25 min
 };
 
 // Target time for time-score normalization (seconds)
